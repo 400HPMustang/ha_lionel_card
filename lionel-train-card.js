@@ -2,7 +2,7 @@
  * Lionel Train Controller Card
  * A custom Lovelace card for controlling Lionel LionChief trains
  * https://github.com/BlackandBlue1908/ha_lionel_card
- * Version: 2.0.0 - 3D Train Animation with Three.js
+ * Version: 2.0.1 - Fixed direction animation
  */
 
 // Load Three.js dynamically if not already loaded
@@ -2210,7 +2210,7 @@ class LionelTrainCard extends HTMLElement {
         if (this._trainProgress < 0) this._trainProgress += 1;
       }
 
-      // Position train cars - always face forward on track, only movement direction changes
+      // Position train cars - always face the same direction along track
       this._trainCars.forEach(car => {
         let carProg = this._trainProgress - car.offset;
         if (carProg < 0) carProg += 1;
@@ -2218,7 +2218,8 @@ class LionelTrainCard extends HTMLElement {
         const position = this._trainPath.getPointAt(carProg);
         car.mesh.position.copy(position);
         
-        // Always look ahead on track (train orientation stays the same)
+        // Always look in the positive direction along the track (clockwise)
+        // This keeps the train facing the same way regardless of movement direction
         let lookProg = carProg + 0.002;
         if (lookProg > 1) lookProg -= 1;
         const lookAtPos = this._trainPath.getPointAt(lookProg);
