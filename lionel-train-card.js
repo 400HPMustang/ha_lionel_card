@@ -2,7 +2,7 @@
  * Lionel Train Controller Card
  * A custom Lovelace card for controlling Lionel LionChief trains
  * https://github.com/BlackandBlue1908/ha_lionel_card
- * Version: 2.0.1 - Fixed direction animation
+ * Version: 2.1.0 - Added visual polish, disabled states, button feedback
  */
 
 // Load Three.js dynamically if not already loaded
@@ -152,6 +152,54 @@ class LionelTrainCard extends HTMLElement {
         .status.disconnected {
           background: var(--danger-color);
           color: white;
+        }
+
+        .status.connecting {
+          background: var(--warning-color);
+          color: white;
+          animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.6; }
+        }
+
+        /* Disabled state for controls when disconnected */
+        .card.disconnected .control-btn,
+        .card.disconnected .direction-btn,
+        .card.disconnected .voice-btn,
+        .card.disconnected .throttle-slider {
+          opacity: 0.5;
+          pointer-events: none;
+          cursor: not-allowed;
+        }
+
+        .card.disconnected .control-btn:hover,
+        .card.disconnected .direction-btn:hover,
+        .card.disconnected .voice-btn:hover {
+          transform: none;
+          background: var(--surface-color);
+        }
+
+        /* Keep connect button enabled when disconnected */
+        .card.disconnected #btn-connect {
+          opacity: 1;
+          pointer-events: auto;
+          cursor: pointer;
+        }
+
+        .card.disconnected #btn-connect:hover {
+          background: var(--success-color);
+          color: white;
+        }
+
+        /* Button press feedback */
+        .control-btn.pressing,
+        .direction-btn.pressing,
+        .voice-btn.pressing {
+          transform: scale(0.95) !important;
+          opacity: 0.8;
         }
 
         /* 3D Train Animation Section */
@@ -886,6 +934,7 @@ class LionelTrainCard extends HTMLElement {
 
     // Stop button
     btnStop.addEventListener('click', () => {
+      this._buttonFeedback(btnStop);
       this._pressButton('stop');
       throttle.value = 0;
       this.shadowRoot.getElementById('speed-display').textContent = '0%';
@@ -893,22 +942,45 @@ class LionelTrainCard extends HTMLElement {
 
     // Direction buttons - immediately update animation state
     btnForward.addEventListener('click', () => {
+      this._buttonFeedback(btnForward);
       this._pressButton('forward');
       this._trainDirection3d = true;
     });
     btnReverse.addEventListener('click', () => {
+      this._buttonFeedback(btnReverse);
       this._pressButton('reverse');
       this._trainDirection3d = false;
     });
 
     // Control buttons
-    btnLights.addEventListener('click', () => this._toggleSwitch('lights'));
-    btnHorn.addEventListener('click', () => this._pressButton('horn'));
-    btnBell.addEventListener('click', () => this._pressButton('bell'));
+    btnLights.addEventListener('click', () => {
+      this._buttonFeedback(btnLights);
+      this._toggleSwitch('lights');
+    });
+    btnHorn.addEventListener('click', () => {
+      this._buttonFeedback(btnHorn);
+      this._pressButton('horn');
+    });
+    btnBell.addEventListener('click', () => {
+      this._buttonFeedback(btnBell);
+      this._pressButton('bell');
+    });
     
     // Connection buttons
-    btnConnect.addEventListener('click', () => this._pressButton('connect'));
-    btnDisconnect.addEventListener('click', () => this._pressButton('disconnect'));
+    btnConnect.addEventListener('click', () => {
+      this._buttonFeedback(btnConnect);
+      this._pressButton('connect');
+      // Show connecting state
+      const statusEl = this.shadowRoot.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = 'Connecting...';
+        statusEl.className = 'status connecting';
+      }
+    });
+    btnDisconnect.addEventListener('click', () => {
+      this._buttonFeedback(btnDisconnect);
+      this._pressButton('disconnect');
+    });
 
     // Auto-reconnect toggle
     const autoReconnectToggle = this.shadowRoot.getElementById('toggle-auto-reconnect');
@@ -930,7 +1002,10 @@ class LionelTrainCard extends HTMLElement {
     announcements.forEach(({ id, name }) => {
       const btn = this.shadowRoot.getElementById(id);
       if (btn) {
-        btn.addEventListener('click', () => this._pressButton(`announcement_${name}`));
+        btn.addEventListener('click', () => {
+          this._buttonFeedback(btn);
+          this._pressButton(`announcement_${name}`);
+        });
       }
     });
 
@@ -997,6 +1072,14 @@ class LionelTrainCard extends HTMLElement {
     });
   }
 
+  _buttonFeedback(btn) {
+    if (!btn) return;
+    btn.classList.add('pressing');
+    setTimeout(() => {
+      btn.classList.remove('pressing');
+    }, 150);
+  }
+
   _updateCard() {
     if (!this._hass || !this._config || !this._deviceName) return;
 
@@ -1004,11 +1087,21 @@ class LionelTrainCard extends HTMLElement {
     const connectionEntity = this._getEntityId('binary_sensor', 'connection');
     const connectionState = this._hass.states[connectionEntity];
     const statusEl = this.shadowRoot.getElementById('status');
+    const cardEl = this.shadowRoot.querySelector('.card');
     
     if (statusEl && connectionState) {
       const isConnected = connectionState.state === 'on';
       statusEl.textContent = isConnected ? 'Connected' : 'Disconnected';
       statusEl.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
+      
+      // Add/remove disconnected class on card for disabling controls
+      if (cardEl) {
+        if (isConnected) {
+          cardEl.classList.remove('disconnected');
+        } else {
+          cardEl.classList.add('disconnected');
+        }
+      }
     }
 
     // Update throttle value
