@@ -668,14 +668,17 @@ class LionelTrainCard extends HTMLElement {
 class LionelTrainCardEditor extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
-    if (!this._rendered) {
+    // Re-render when hass is updated to populate device list
+    if (this._config) {
       this._render();
     }
   }
 
   setConfig(config) {
-    this._config = config;
-    this._render();
+    this._config = config || {};
+    if (this._hass) {
+      this._render();
+    }
   }
 
   _getLionelDevices() {
