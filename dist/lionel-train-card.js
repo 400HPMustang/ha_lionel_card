@@ -706,11 +706,14 @@ class LionelTrainCardEditor extends HTMLElement {
   }
 
   _render() {
-    this._rendered = true;
+    if (!this._config) return;
+    
     const devices = this._getLionelDevices();
+    const currentDevice = this._config.device || '';
+    const currentName = this._config.name || '';
     
     const deviceOptions = devices.length > 0 
-      ? devices.map(d => `<option value="${d}" ${this._config.device === d ? 'selected' : ''}>${d}</option>`).join('')
+      ? devices.map(d => `<option value="${d}" ${currentDevice === d ? 'selected' : ''}>${d}</option>`).join('')
       : '<option value="">No Lionel trains found</option>';
 
     this.innerHTML = `
@@ -761,7 +764,7 @@ class LionelTrainCardEditor extends HTMLElement {
         
         <div class="field">
           <label>Card Name (optional)</label>
-          <input type="text" id="name" value="${this._config.name || ''}" placeholder="Leave blank to use device name">
+          <input type="text" id="name" value="${currentName}" placeholder="Leave blank to use device name">
         </div>
       </div>
     `;
