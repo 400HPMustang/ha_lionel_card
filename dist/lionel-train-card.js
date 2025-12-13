@@ -1133,13 +1133,13 @@ class LionelTrainCard extends HTMLElement {
 
     // Scene
     this._scene3d = new THREE.Scene();
-    this._scene3d.background = new THREE.Color(0x87CEEB);
-    this._scene3d.fog = new THREE.Fog(0xaaccff, 80, 300);
+    this._scene3d.background = new THREE.Color(0x1a3a5c);
+    this._scene3d.fog = new THREE.Fog(0x2a4a6c, 120, 350);
 
-    // Camera - better angle for viewing the scene
-    this._camera3d = new THREE.PerspectiveCamera(50, width / height, 1, 500);
-    this._camera3d.position.set(65, 45, 65);
-    this._camera3d.lookAt(0, 5, 0);
+    // Camera - side view angle to see train profile
+    this._camera3d = new THREE.PerspectiveCamera(40, width / height, 1, 500);
+    this._camera3d.position.set(0, 35, 90);
+    this._camera3d.lookAt(0, 3, 0);
 
     // Renderer
     this._renderer3d = new THREE.WebGLRenderer({ antialias: true });
@@ -1158,9 +1158,9 @@ class LionelTrainCard extends HTMLElement {
     dirLight.shadow.mapSize.height = 1024;
     this._scene3d.add(dirLight);
 
-    // Ground (snow)
+    // Ground (snow - slightly blue tinted to reduce whiteout)
     const groundGeo = new THREE.PlaneGeometry(500, 500);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0xd8e8f0, roughness: 0.95 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
@@ -1266,121 +1266,229 @@ class LionelTrainCard extends HTMLElement {
     const THREE = window.THREE;
     this._trainCars = [];
 
-    // Locomotive
+    // Locomotive - elongated Polar Express style
     const locoGroup = new THREE.Group();
     const boilerMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.3 });
 
-    // Boiler
-    const boiler = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 10, 24), boilerMat);
+    // Main frame/chassis
+    const chassis = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1.2, 16), boilerMat);
+    chassis.position.set(0, 1.8, 0);
+    locoGroup.add(chassis);
+
+    // Boiler - longer and properly positioned
+    const boiler = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 14, 24), boilerMat);
     boiler.rotation.x = Math.PI / 2;
-    boiler.position.set(0, 3, 1);
+    boiler.position.set(0, 4.2, 1.5);
     boiler.castShadow = true;
     locoGroup.add(boiler);
 
-    // Cab
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(4.2, 5, 3.5), boilerMat);
-    cab.position.set(0, 4, -5);
+    // Boiler front (smokebox)
+    const smokebox = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.3, 2, 24), boilerMat);
+    smokebox.rotation.x = Math.PI / 2;
+    smokebox.position.set(0, 4.2, 9);
+    locoGroup.add(smokebox);
+
+    // Smokebox door
+    const smokeboxDoor = new THREE.Mesh(new THREE.CircleGeometry(2.2, 24), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+    smokeboxDoor.position.set(0, 4.2, 10.1);
+    locoGroup.add(smokeboxDoor);
+
+    // Cab - taller and more detailed
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(5, 6, 4.5), boilerMat);
+    cab.position.set(0, 5, -6);
     cab.castShadow = true;
     locoGroup.add(cab);
 
-    // Smokestack
-    const stack = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.5, 1.8, 12), new THREE.MeshStandardMaterial({ color: 0x111111 }));
-    stack.position.set(0, 5, 5);
+    // Cab roof
+    const cabRoof = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.4, 5), boilerMat);
+    cabRoof.position.set(0, 8.2, -6);
+    locoGroup.add(cabRoof);
+
+    // Cab windows
+    const cabWinMat = new THREE.MeshBasicMaterial({ color: 0x334455 });
+    const cabWinFront = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2), cabWinMat);
+    cabWinFront.position.set(0, 6, -3.7);
+    locoGroup.add(cabWinFront);
+    for (let s = -1; s <= 1; s += 2) {
+      const cabWinSide = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), cabWinMat);
+      cabWinSide.rotation.y = s * Math.PI / 2;
+      cabWinSide.position.set(s * 2.55, 6, -6);
+      locoGroup.add(cabWinSide);
+    }
+
+    // Smokestack - taller
+    const stack = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.9, 2.5, 12), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+    stack.position.set(0, 7.5, 7);
     locoGroup.add(stack);
 
-    // Cowcatcher
-    const cow = new THREE.Mesh(new THREE.ConeGeometry(1.8, 2, 4), boilerMat);
-    cow.rotation.x = -Math.PI / 2;
-    cow.rotation.z = Math.PI / 4;
-    cow.position.set(0, 1, 7);
+    // Steam dome
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), boilerMat);
+    dome.position.set(0, 6.3, 2);
+    locoGroup.add(dome);
+
+    // Sand dome
+    const sandDome = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), boilerMat);
+    sandDome.position.set(0, 6.3, -2);
+    locoGroup.add(sandDome);
+
+    // Cowcatcher/pilot
+    const cowGeo = new THREE.BoxGeometry(3.5, 1.5, 3);
+    const cow = new THREE.Mesh(cowGeo, boilerMat);
+    cow.position.set(0, 1.2, 10);
     locoGroup.add(cow);
+    
+    // Pilot bars
+    for (let i = -1.2; i <= 1.2; i += 0.4) {
+      const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.5, 8), boilerMat);
+      bar.rotation.x = -Math.PI / 4;
+      bar.position.set(i, 1, 11.5);
+      locoGroup.add(bar);
+    }
 
     // Headlight
-    const lightHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1, 12), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+    const lightHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.2, 12), new THREE.MeshStandardMaterial({ color: 0x111111 }));
     lightHousing.rotation.x = Math.PI / 2;
-    lightHousing.position.set(0, 5, 6.5);
+    lightHousing.position.set(0, 7, 9.5);
     locoGroup.add(lightHousing);
 
-    this._headlightBulb = new THREE.Mesh(new THREE.CircleGeometry(0.5, 12), new THREE.MeshBasicMaterial({ color: 0x333333 }));
-    this._headlightBulb.position.set(0, 5, 7.1);
+    this._headlightBulb = new THREE.Mesh(new THREE.CircleGeometry(0.6, 12), new THREE.MeshBasicMaterial({ color: 0x333333 }));
+    this._headlightBulb.position.set(0, 7, 10.2);
     locoGroup.add(this._headlightBulb);
 
     this._spotlight = new THREE.SpotLight(0xffaa00, 0, 80, Math.PI / 6, 0.5, 1);
-    this._spotlight.position.set(0, 5, 7);
+    this._spotlight.position.set(0, 7, 10);
     const target = new THREE.Object3D();
-    target.position.set(0, 3, 20);
+    target.position.set(0, 3, 25);
     locoGroup.add(target);
     this._spotlight.target = target;
     locoGroup.add(this._spotlight);
 
-    // Wheels
-    const wheelGeo = new THREE.CylinderGeometry(1.4, 1.4, 0.4, 24);
+    // Drive wheels - larger
+    const driveWheelGeo = new THREE.CylinderGeometry(1.8, 1.8, 0.5, 24);
     const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-    for (let z = -2; z <= 4; z += 2.5) {
-      const wL = new THREE.Mesh(wheelGeo, wheelMat);
-      wL.rotation.z = Math.PI / 2;
-      wL.position.set(-2, 1.4, z);
-      locoGroup.add(wL);
-      const wR = new THREE.Mesh(wheelGeo, wheelMat);
-      wR.rotation.z = Math.PI / 2;
-      wR.position.set(2, 1.4, z);
-      locoGroup.add(wR);
+    const rimMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+    for (let z = -1; z <= 6; z += 3.5) {
+      for (let s = -1; s <= 1; s += 2) {
+        const w = new THREE.Mesh(driveWheelGeo, wheelMat);
+        w.rotation.z = Math.PI / 2;
+        w.position.set(s * 2.2, 1.8, z);
+        locoGroup.add(w);
+        // Wheel rim
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.1, 8, 24), rimMat);
+        rim.rotation.y = Math.PI / 2;
+        rim.position.set(s * 2.5, 1.8, z);
+        locoGroup.add(rim);
+      }
+    }
+
+    // Pilot wheels - smaller
+    const pilotWheelGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.4, 16);
+    for (let s = -1; s <= 1; s += 2) {
+      const pw = new THREE.Mesh(pilotWheelGeo, wheelMat);
+      pw.rotation.z = Math.PI / 2;
+      pw.position.set(s * 1.8, 0.9, 9);
+      locoGroup.add(pw);
+    }
+
+    // Connecting rods (simplified)
+    const rodMat = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.6 });
+    for (let s = -1; s <= 1; s += 2) {
+      const rod = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 10), rodMat);
+      rod.position.set(s * 2.6, 1.8, 2.5);
+      locoGroup.add(rod);
     }
 
     locoGroup.userData = { isEngine: true };
     this._scene3d.add(locoGroup);
     this._trainCars.push({ mesh: locoGroup, offset: 0 });
 
-    // Tender
+    // Tender - longer and more detailed
     const tenderGroup = new THREE.Group();
-    const tenderBody = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.5, 8), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 }));
-    tenderBody.position.y = 3;
+    const tenderMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+    
+    // Tender body
+    const tenderBody = new THREE.Mesh(new THREE.BoxGeometry(4.2, 4.5, 10), tenderMat);
+    tenderBody.position.y = 3.5;
     tenderBody.castShadow = true;
     tenderGroup.add(tenderBody);
-    this._addBogie3D(tenderGroup, -2.5);
-    this._addBogie3D(tenderGroup, 2.5);
-    this._scene3d.add(tenderGroup);
-    this._trainCars.push({ mesh: tenderGroup, offset: 0.06 });
 
-    // Passenger cars (for Polar Express)
+    // Coal pile
+    const coalGeo = new THREE.SphereGeometry(1.5, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+    const coalMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1 });
+    for (let x = -0.8; x <= 0.8; x += 0.8) {
+      for (let z = -2; z <= 2; z += 2) {
+        const coal = new THREE.Mesh(coalGeo, coalMat);
+        coal.position.set(x, 5.8, z);
+        coal.scale.set(0.8, 0.5, 0.8);
+        tenderGroup.add(coal);
+      }
+    }
+
+    this._addBogie3D(tenderGroup, -3.5);
+    this._addBogie3D(tenderGroup, 3.5);
+    this._scene3d.add(tenderGroup);
+    this._trainCars.push({ mesh: tenderGroup, offset: 0.055 });
+
+    // Passenger cars
     const isPolarExpress = this._trainModel === 'Polar Express';
     const numCars = isPolarExpress ? 3 : 1;
     
     for (let i = 0; i < numCars; i++) {
       const carGroup = new THREE.Group();
-      const carColor = isPolarExpress ? 0x2b4c7e : 0x8B4513;
-      const body = new THREE.Mesh(new THREE.BoxGeometry(3.8, 4, 11), new THREE.MeshStandardMaterial({ color: carColor, roughness: 0.3 }));
-      body.position.y = 3.4;
+      const carColor = isPolarExpress ? 0x1e3a5f : 0x8B4513;
+      
+      // Car body - longer
+      const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 4.5, 14), new THREE.MeshStandardMaterial({ color: carColor, roughness: 0.3 }));
+      body.position.y = 3.8;
       body.castShadow = true;
       carGroup.add(body);
 
-      // Roof
-      const roof = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 11.2, 12, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: 0x506070 }));
+      // Roof - rounded
+      const roof = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 14.2, 12, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: 0x3a4a5a }));
       roof.rotation.z = Math.PI / 2;
       roof.rotation.y = Math.PI / 2;
-      roof.position.y = 5.4;
-      roof.scale.set(1.2, 1, 1.5);
+      roof.position.y = 6.1;
+      roof.scale.set(1.4, 1, 1.5);
       carGroup.add(roof);
 
+      // Clerestory (raised center roof section)
+      const clerestory = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.8, 10), new THREE.MeshStandardMaterial({ color: 0x2a3a4a }));
+      clerestory.position.y = 7;
+      carGroup.add(clerestory);
+
       // Windows
-      if (isPolarExpress) {
-        const winMat = new THREE.MeshBasicMaterial({ color: 0xffffdd });
-        for (let s = -1; s <= 1; s += 2) {
-          for (let w = -4; w <= 4; w += 1.8) {
-            const win = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.9), winMat);
-            win.rotation.y = s * Math.PI / 2;
-            win.position.set(s * 1.95, 4.2, w);
-            carGroup.add(win);
-          }
+      const winMat = new THREE.MeshBasicMaterial({ color: isPolarExpress ? 0xffffcc : 0x556677 });
+      for (let s = -1; s <= 1; s += 2) {
+        for (let w = -5.5; w <= 5.5; w += 2.2) {
+          const win = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.5), winMat);
+          win.rotation.y = s * Math.PI / 2;
+          win.position.set(s * 2.15, 4.5, w);
+          carGroup.add(win);
         }
-        // Gold stripe
-        const stripe = new THREE.Mesh(new THREE.BoxGeometry(3.85, 0.3, 11.1), new THREE.MeshStandardMaterial({ color: 0xFFD700 }));
-        stripe.position.y = 2.5;
-        carGroup.add(stripe);
       }
 
-      this._addBogie3D(carGroup, -3.5);
-      this._addBogie3D(carGroup, 3.5);
+      // Window stripe (red for Polar Express)
+      if (isPolarExpress) {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(4.25, 0.4, 14.1), new THREE.MeshStandardMaterial({ color: 0x8b0000 }));
+        stripe.position.y = 5.5;
+        carGroup.add(stripe);
+        
+        // Gold trim
+        const goldTrim = new THREE.Mesh(new THREE.BoxGeometry(4.25, 0.15, 14.1), new THREE.MeshStandardMaterial({ color: 0xc9a227 }));
+        goldTrim.position.y = 2.2;
+        carGroup.add(goldTrim);
+      }
+
+      // Vestibules (end platforms)
+      const vestMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+      for (let z = -1; z <= 1; z += 2) {
+        const vest = new THREE.Mesh(new THREE.BoxGeometry(3.5, 4, 0.6), vestMat);
+        vest.position.set(0, 3.8, z * 7.3);
+        carGroup.add(vest);
+      }
+
+      this._addBogie3D(carGroup, -4.5);
+      this._addBogie3D(carGroup, 4.5);
       this._scene3d.add(carGroup);
       this._trainCars.push({ mesh: carGroup, offset: 0.12 + (i * 0.045) });
     }
@@ -1679,7 +1787,7 @@ class LionelTrainCard extends HTMLElement {
     const chance = 0.7 - (this._trainSpeed3d / 100) * 0.5;
     
     if (Math.random() > chance) {
-      const stackOffset = new THREE.Vector3(0, 5, 5);
+      const stackOffset = new THREE.Vector3(0, 8.5, 7);
       stackOffset.applyMatrix4(engine.matrixWorld);
       
       const particle = {
