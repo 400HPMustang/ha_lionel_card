@@ -704,6 +704,60 @@ class LionelTrainCard extends HTMLElement {
           opacity: 0.4;
           pointer-events: none;
         }
+
+        /* Auto Reconnect Toggle */
+        .auto-reconnect-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 0;
+          margin-top: 8px;
+          border-top: 1px solid var(--surface-hover);
+        }
+
+        .auto-reconnect-label {
+          font-size: 0.85em;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .auto-reconnect-label svg {
+          width: 18px;
+          height: 18px;
+        }
+
+        .toggle-switch {
+          position: relative;
+          width: 44px;
+          height: 24px;
+          background: var(--surface-hover);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+          background: var(--success-color);
+        }
+
+        .toggle-switch::after {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 20px;
+          height: 20px;
+          background: white;
+          border-radius: 50%;
+          transition: transform 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+          transform: translateX(20px);
+        }
         
         /* Expandable Settings Section */
         .settings-toggle {
@@ -992,6 +1046,15 @@ class LionelTrainCard extends HTMLElement {
               </svg>
               Disconnect
             </button>
+            <div class="auto-reconnect-row">
+              <div class="auto-reconnect-label">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12,6V9L16,5L12,1V4A8,8 0 0,0 4,12C4,13.57 4.46,15.03 5.24,16.26L6.7,14.8C6.25,13.97 6,13 6,12A6,6 0 0,1 12,6M18.76,7.74L17.3,9.2C17.74,10.04 18,11 18,12A6,6 0 0,1 12,18V15L8,19L12,23V20A8,8 0 0,0 20,12C20,10.43 19.54,8.97 18.76,7.74Z"/>
+                </svg>
+                Auto Reconnect
+              </div>
+              <div class="toggle-switch" id="toggle-auto-reconnect"></div>
+            </div>
           </div>
           
           <!-- Expandable Settings Section -->
@@ -1099,6 +1162,12 @@ class LionelTrainCard extends HTMLElement {
     // Connection buttons
     btnConnect.addEventListener('click', () => this._pressButton('connect'));
     btnDisconnect.addEventListener('click', () => this._pressButton('disconnect'));
+
+    // Auto-reconnect toggle
+    const autoReconnectToggle = this.shadowRoot.getElementById('toggle-auto-reconnect');
+    if (autoReconnectToggle) {
+      autoReconnectToggle.addEventListener('click', () => this._toggleSwitch('auto_reconnect'));
+    }
 
     // Announcement buttons
     const announcements = [
@@ -1241,6 +1310,18 @@ class LionelTrainCard extends HTMLElement {
 
     // Update train animation
     this._updateTrainAnimation(currentSpeed, isForward, lightsOn);
+
+    // Update auto-reconnect toggle
+    const autoReconnectEntity = this._getEntityId('switch', 'auto_reconnect');
+    const autoReconnectState = this._hass.states[autoReconnectEntity];
+    const autoReconnectToggle = this.shadowRoot.getElementById('toggle-auto-reconnect');
+    if (autoReconnectState && autoReconnectToggle) {
+      if (autoReconnectState.state === 'on') {
+        autoReconnectToggle.classList.add('active');
+      } else {
+        autoReconnectToggle.classList.remove('active');
+      }
+    }
 
     // Update volume sliders
     const volumeControls = [
