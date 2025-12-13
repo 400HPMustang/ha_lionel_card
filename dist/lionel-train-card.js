@@ -2140,8 +2140,16 @@ class LionelTrainCard extends HTMLElement {
         if (carProg > 1) carProg -= 1;
         const position = this._trainPath.getPointAt(carProg);
         car.mesh.position.copy(position);
-        let lookProg = carProg + 0.001;
-        if (lookProg > 1) lookProg -= 1;
+        
+        // Look ahead or behind based on direction
+        let lookProg;
+        if (this._trainDirection3d) {
+          lookProg = carProg + 0.001;
+          if (lookProg > 1) lookProg -= 1;
+        } else {
+          lookProg = carProg - 0.001;
+          if (lookProg < 0) lookProg += 1;
+        }
         const lookAtPos = this._trainPath.getPointAt(lookProg);
         car.mesh.lookAt(lookAtPos);
       });
