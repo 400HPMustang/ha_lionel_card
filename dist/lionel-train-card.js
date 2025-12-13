@@ -1,7 +1,7 @@
 /**
  * Lionel Train Controller Card
  * A custom Lovelace card for controlling Lionel LionChief trains
- * https://github.com/BlackandBlue1908/lionel-train-card
+ * https://github.com/BlackandBlue1908/ha_lionel_card
  */
 
 class LionelTrainCard extends HTMLElement {
@@ -16,98 +16,121 @@ class LionelTrainCard extends HTMLElement {
   }
 
   setConfig(config) {
-    if (!config.entity) {
-      throw new Error('You need to define an entity (the throttle number entity)');
+    if (!config.device) {
+      throw new Error('You need to select a train device');
     }
     this._config = config;
-    this._entityBase = config.entity.replace('_throttle', '').replace('number.', '');
+    this._deviceName = config.device;
     this._render();
   }
 
-  _getEntityId(suffix) {
-    return `${this._entityBase}_${suffix}`;
+  _getEntityId(domain, suffix) {
+    // Convert device name to entity format: "Polar Express" -> "polar_express"
+    const entityBase = this._deviceName.toLowerCase().replace(/\s+/g, '_');
+    return `${domain}.${entityBase}_${suffix}`;
   }
 
   _render() {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          --card-bg: var(--ha-card-background, var(--card-background-color, white));
-          --primary-color: var(--primary-color, #03a9f4);
-          --text-color: var(--primary-text-color, #212121);
-          --secondary-text: var(--secondary-text-color, #727272);
+          --card-bg: var(--ha-card-background, var(--card-background-color, #1c1c1c));
+          --primary-color: #2196F3;
+          --accent-color: #FF9800;
+          --text-color: var(--primary-text-color, #e0e0e0);
+          --text-secondary: var(--secondary-text-color, #9e9e9e);
+          --surface-color: rgba(255,255,255,0.05);
+          --surface-hover: rgba(255,255,255,0.1);
+          --success-color: #4CAF50;
+          --danger-color: #f44336;
+          --warning-color: #FF9800;
         }
         
         .card {
           background: var(--card-bg);
-          border-radius: 12px;
-          padding: 16px;
+          border-radius: 16px;
+          padding: 20px;
           font-family: var(--paper-font-body1_-_font-family, 'Roboto', sans-serif);
+          color: var(--text-color);
         }
         
         .header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 16px;
+          margin-bottom: 20px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid var(--surface-color);
         }
         
         .title {
-          font-size: 1.2em;
-          font-weight: 500;
-          color: var(--text-color);
+          font-size: 1.3em;
+          font-weight: 600;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
         }
         
         .title svg {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
+          color: var(--accent-color);
         }
         
         .status {
-          font-size: 0.85em;
-          padding: 4px 12px;
-          border-radius: 12px;
-          font-weight: 500;
+          font-size: 0.8em;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
         
         .status.connected {
-          background: #4caf50;
+          background: var(--success-color);
           color: white;
         }
         
         .status.disconnected {
-          background: #f44336;
+          background: var(--danger-color);
           color: white;
         }
         
+        /* Throttle Section */
         .throttle-section {
-          margin: 20px 0;
+          background: var(--surface-color);
+          border-radius: 12px;
+          padding: 16px;
+          margin-bottom: 16px;
         }
         
-        .throttle-label {
+        .throttle-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 8px;
-          color: var(--text-color);
+          margin-bottom: 12px;
+        }
+        
+        .throttle-label {
+          font-size: 0.9em;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
         }
         
         .speed-value {
-          font-size: 2em;
-          font-weight: bold;
+          font-size: 2.5em;
+          font-weight: 700;
           color: var(--primary-color);
         }
         
         .throttle-slider {
           width: 100%;
-          height: 40px;
+          height: 12px;
           -webkit-appearance: none;
           appearance: none;
-          background: linear-gradient(to right, #4caf50, #ffeb3b, #f44336);
-          border-radius: 20px;
+          background: linear-gradient(to right, var(--success-color) 0%, var(--warning-color) 50%, var(--danger-color) 100%);
+          border-radius: 6px;
           outline: none;
           cursor: pointer;
         }
@@ -115,30 +138,86 @@ class LionelTrainCard extends HTMLElement {
         .throttle-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 50px;
-          height: 50px;
+          width: 28px;
+          height: 28px;
           background: white;
-          border: 4px solid var(--primary-color);
+          border: 3px solid var(--primary-color);
           border-radius: 50%;
           cursor: grab;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          transition: transform 0.1s;
+        }
+        
+        .throttle-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.1);
         }
         
         .throttle-slider::-moz-range-thumb {
-          width: 50px;
-          height: 50px;
+          width: 28px;
+          height: 28px;
           background: white;
-          border: 4px solid var(--primary-color);
+          border: 3px solid var(--primary-color);
           border-radius: 50%;
           cursor: grab;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         
+        /* Direction Buttons */
+        .direction-section {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+        
+        .direction-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 14px;
+          border: 2px solid var(--surface-hover);
+          border-radius: 12px;
+          background: var(--surface-color);
+          color: var(--text-color);
+          font-size: 0.95em;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .direction-btn:hover {
+          background: var(--primary-color);
+          border-color: var(--primary-color);
+          color: white;
+        }
+        
+        .direction-btn.active {
+          background: var(--primary-color);
+          border-color: var(--primary-color);
+          color: white;
+        }
+        
+        .direction-btn svg {
+          width: 20px;
+          height: 20px;
+        }
+        
+        /* Section Headers */
+        .section-header {
+          font-size: 0.75em;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin: 16px 0 10px 0;
+          padding-left: 4px;
+        }
+        
+        /* Control Buttons Grid */
         .controls {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
-          margin-top: 16px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
         }
         
         .control-btn {
@@ -146,10 +225,10 @@ class LionelTrainCard extends HTMLElement {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 12px 8px;
+          padding: 14px 8px;
           border: none;
           border-radius: 12px;
-          background: var(--ha-card-background, #f5f5f5);
+          background: var(--surface-color);
           color: var(--text-color);
           cursor: pointer;
           transition: all 0.2s ease;
@@ -157,85 +236,154 @@ class LionelTrainCard extends HTMLElement {
         }
         
         .control-btn:hover {
-          background: var(--primary-color);
-          color: white;
-          transform: scale(1.02);
+          background: var(--surface-hover);
+          transform: translateY(-2px);
         }
         
         .control-btn:active {
-          transform: scale(0.98);
+          transform: translateY(0);
         }
         
         .control-btn.active {
-          background: var(--primary-color);
+          background: var(--accent-color);
           color: white;
         }
         
+        .control-btn.lights-btn.active {
+          background: #FFC107;
+          color: #333;
+        }
+        
         .control-btn svg {
-          width: 28px;
-          height: 28px;
-          margin-bottom: 4px;
+          width: 26px;
+          height: 26px;
+          margin-bottom: 6px;
         }
         
         .control-btn span {
-          font-size: 0.75em;
+          font-size: 0.7em;
           font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
         
-        .direction-section {
-          display: flex;
+        /* Voice/Announcement Buttons */
+        .voice-controls {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
           gap: 8px;
+        }
+        
+        .voice-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 6px;
+          border: none;
+          border-radius: 10px;
+          background: var(--surface-color);
+          color: var(--text-color);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          min-height: 60px;
+        }
+        
+        .voice-btn:hover {
+          background: #9C27B0;
+          color: white;
+        }
+        
+        .voice-btn:active {
+          transform: scale(0.95);
+        }
+        
+        .voice-btn svg {
+          width: 22px;
+          height: 22px;
+          margin-bottom: 4px;
+        }
+        
+        .voice-btn span {
+          font-size: 0.6em;
+          font-weight: 500;
+          text-align: center;
+          line-height: 1.2;
+        }
+        
+        /* Connection Buttons */
+        .connection-section {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
           margin-top: 16px;
         }
         
-        .direction-btn {
-          flex: 1;
+        .connect-btn {
+          padding: 12px;
+          border: none;
+          border-radius: 10px;
+          font-size: 0.85em;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
-          padding: 16px;
-          border: 2px solid var(--primary-color);
-          border-radius: 12px;
-          background: transparent;
-          color: var(--primary-color);
-          font-size: 1em;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
         }
         
-        .direction-btn:hover, .direction-btn.active {
-          background: var(--primary-color);
+        .connect-btn svg {
+          width: 18px;
+          height: 18px;
+        }
+        
+        .connect-btn.connect {
+          background: var(--success-color);
           color: white;
         }
         
-        .direction-btn svg {
-          width: 24px;
-          height: 24px;
+        .connect-btn.connect:hover {
+          background: #43A047;
         }
         
+        .connect-btn.disconnect {
+          background: var(--surface-color);
+          color: var(--text-color);
+          border: 1px solid var(--surface-hover);
+        }
+        
+        .connect-btn.disconnect:hover {
+          background: var(--danger-color);
+          color: white;
+          border-color: var(--danger-color);
+        }
+        
+        /* Emergency Stop */
         .stop-btn {
           width: 100%;
           padding: 16px;
           margin-top: 16px;
           border: none;
           border-radius: 12px;
-          background: #f44336;
+          background: var(--danger-color);
           color: white;
-          font-size: 1.1em;
-          font-weight: bold;
+          font-size: 1em;
+          font-weight: 700;
           cursor: pointer;
           transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 10px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
         }
         
         .stop-btn:hover {
           background: #d32f2f;
           transform: scale(1.02);
+          box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
         }
         
         .stop-btn:active {
@@ -243,12 +391,12 @@ class LionelTrainCard extends HTMLElement {
         }
         
         .stop-btn svg {
-          width: 24px;
-          height: 24px;
+          width: 22px;
+          height: 22px;
         }
         
         .unavailable {
-          opacity: 0.5;
+          opacity: 0.4;
           pointer-events: none;
         }
       </style>
@@ -260,14 +408,14 @@ class LionelTrainCard extends HTMLElement {
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,4L3,7L4.5,8.5L3,10V11H21V10L19.5,8.5L21,7L12,4M3,12V15H5V19H3V21H21V19H19V15H21V12H3M7,15H9V19H7V15M11,15H13V19H11V15M15,15H17V19H15V15Z"/>
               </svg>
-              <span>${this._config.name || 'Lionel Train'}</span>
+              <span>${this._config.name || this._deviceName}</span>
             </div>
             <div class="status disconnected" id="status">Disconnected</div>
           </div>
           
           <div class="throttle-section">
-            <div class="throttle-label">
-              <span>Throttle</span>
+            <div class="throttle-header">
+              <span class="throttle-label">Throttle</span>
               <span class="speed-value" id="speed-display">0%</span>
             </div>
             <input type="range" class="throttle-slider" id="throttle" min="0" max="100" value="0">
@@ -288,8 +436,9 @@ class LionelTrainCard extends HTMLElement {
             </button>
           </div>
           
+          <div class="section-header">Controls</div>
           <div class="controls">
-            <button class="control-btn" id="btn-lights">
+            <button class="control-btn lights-btn" id="btn-lights">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,2A7,7 0 0,0 5,9C5,11.38 6.19,13.47 8,14.74V17A1,1 0 0,0 9,18H15A1,1 0 0,0 16,17V14.74C17.81,13.47 19,11.38 19,9A7,7 0 0,0 12,2M9,21A1,1 0 0,0 10,22H14A1,1 0 0,0 15,21V20H9V21Z"/>
               </svg>
@@ -307,11 +456,66 @@ class LionelTrainCard extends HTMLElement {
               </svg>
               <span>Bell</span>
             </button>
-            <button class="control-btn" id="btn-disconnect">
+          </div>
+          
+          <div class="section-header">Announcements</div>
+          <div class="voice-controls">
+            <button class="voice-btn" id="btn-announce-random">
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13,8A4,4 0 0,1 9,12A4,4 0 0,1 5,8A4,4 0 0,1 9,4A4,4 0 0,1 13,8M17,18V20H1V18C1,15.79 4.58,14 9,14C13.42,14 17,15.79 17,18M20.5,14.5V16H19V14.5H20.5M18.5,9.5H17V9A3,3 0 0,1 20,6A3,3 0 0,1 23,9C23,9.97 22.5,10.88 21.71,11.41L21.41,11.6C20.84,12 20.5,12.61 20.5,13.3V13.5H19V13.3C19,12.11 19.6,11 20.59,10.35L20.88,10.16C21.27,9.9 21.5,9.47 21.5,9A1.5,1.5 0 0,0 20,7.5A1.5,1.5 0 0,0 18.5,9V9.5Z"/>
+                <path d="M14.5,2.5C14.5,2.5 16.5,2.5 16.5,4.5C16.5,6.5 14.5,6.5 14.5,6.5M18,2.5C18,2.5 21,2.5 21,6C21,9.5 18,9.5 18,9.5M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7Z"/>
               </svg>
-              <span>Disconnect</span>
+              <span>Random</span>
+            </button>
+            <button class="voice-btn" id="btn-announce-ready">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+              </svg>
+              <span>Ready to Roll</span>
+            </button>
+            <button class="voice-btn" id="btn-announce-hey">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+              </svg>
+              <span>Hey There</span>
+            </button>
+            <button class="voice-btn" id="btn-announce-squeaky">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+              </svg>
+              <span>Squeaky</span>
+            </button>
+            <button class="voice-btn" id="btn-announce-water">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+              </svg>
+              <span>Water & Fire</span>
+            </button>
+            <button class="voice-btn" id="btn-announce-freight">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+              </svg>
+              <span>Fastest Freight</span>
+            </button>
+            <button class="voice-btn" id="btn-announce-penna">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+              </svg>
+              <span>Penna Flyer</span>
+            </button>
+          </div>
+          
+          <div class="connection-section">
+            <button class="connect-btn connect" id="btn-connect">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14.88,16.29L13,18.17V14.41L14.88,16.29M13,3.83L10.88,5.95L13,8.07V3.83M17.71,7.71L12,2H11V9.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L11,14.41V22H12L17.71,16.29L13.41,12L17.71,7.71Z"/>
+              </svg>
+              Connect
+            </button>
+            <button class="connect-btn disconnect" id="btn-disconnect">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14.88,16.29L13,18.17V14.41L14.88,16.29M13,3.83L10.88,5.95L13,8.07V3.83M17.71,7.71L12,2H11V9.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L11,14.41V22H12L17.71,16.29L13.41,12L17.71,7.71M3.41,1.86L2,3.27L7.73,9H6V15H8V9.27L20.73,22L22.14,20.59L3.41,1.86Z"/>
+              </svg>
+              Disconnect
             </button>
           </div>
           
@@ -319,7 +523,7 @@ class LionelTrainCard extends HTMLElement {
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M18,18H6V6H18V18Z"/>
             </svg>
-            EMERGENCY STOP
+            Emergency Stop
           </button>
         </div>
       </ha-card>
@@ -336,6 +540,7 @@ class LionelTrainCard extends HTMLElement {
     const btnLights = this.shadowRoot.getElementById('btn-lights');
     const btnHorn = this.shadowRoot.getElementById('btn-horn');
     const btnBell = this.shadowRoot.getElementById('btn-bell');
+    const btnConnect = this.shadowRoot.getElementById('btn-connect');
     const btnDisconnect = this.shadowRoot.getElementById('btn-disconnect');
 
     // Throttle slider
@@ -358,11 +563,32 @@ class LionelTrainCard extends HTMLElement {
     btnLights.addEventListener('click', () => this._toggleSwitch('lights'));
     btnHorn.addEventListener('click', () => this._pressButton('horn'));
     btnBell.addEventListener('click', () => this._pressButton('bell'));
+    
+    // Connection buttons
+    btnConnect.addEventListener('click', () => this._pressButton('connect'));
     btnDisconnect.addEventListener('click', () => this._pressButton('disconnect'));
+
+    // Announcement buttons
+    const announcements = [
+      { id: 'btn-announce-random', name: 'random' },
+      { id: 'btn-announce-ready', name: 'ready_to_roll' },
+      { id: 'btn-announce-hey', name: 'hey_there' },
+      { id: 'btn-announce-squeaky', name: 'squeaky' },
+      { id: 'btn-announce-water', name: 'water_and_fire' },
+      { id: 'btn-announce-freight', name: 'fastest_freight' },
+      { id: 'btn-announce-penna', name: 'penna_flyer' },
+    ];
+
+    announcements.forEach(({ id, name }) => {
+      const btn = this.shadowRoot.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', () => this._pressButton(`announcement_${name}`));
+      }
+    });
   }
 
   _setThrottle(value) {
-    const entityId = `number.${this._getEntityId('throttle')}`;
+    const entityId = this._getEntityId('number', 'throttle');
     this._hass.callService('number', 'set_value', {
       entity_id: entityId,
       value: value
@@ -371,14 +597,14 @@ class LionelTrainCard extends HTMLElement {
   }
 
   _pressButton(action) {
-    const entityId = `button.${this._getEntityId(action)}`;
+    const entityId = this._getEntityId('button', action);
     this._hass.callService('button', 'press', {
       entity_id: entityId
     });
   }
 
   _toggleSwitch(action) {
-    const entityId = `switch.${this._getEntityId(action)}`;
+    const entityId = this._getEntityId('switch', action);
     this._hass.callService('switch', 'toggle', {
       entity_id: entityId
     });
@@ -388,35 +614,29 @@ class LionelTrainCard extends HTMLElement {
     if (!this._hass || !this._config) return;
 
     // Update connection status
-    const connectionEntity = `binary_sensor.${this._getEntityId('connected')}`;
+    const connectionEntity = this._getEntityId('binary_sensor', 'connected');
     const connectionState = this._hass.states[connectionEntity];
     const statusEl = this.shadowRoot.getElementById('status');
     
-    if (connectionState) {
+    if (statusEl && connectionState) {
       const isConnected = connectionState.state === 'on';
       statusEl.textContent = isConnected ? 'Connected' : 'Disconnected';
       statusEl.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
-      
-      // Disable controls if disconnected
-      const card = this.shadowRoot.querySelector('.card');
-      if (!isConnected) {
-        card.classList.add('unavailable');
-      } else {
-        card.classList.remove('unavailable');
-      }
     }
 
     // Update throttle value
-    const throttleEntity = `number.${this._getEntityId('throttle')}`;
+    const throttleEntity = this._getEntityId('number', 'throttle');
     const throttleState = this._hass.states[throttleEntity];
-    if (throttleState) {
+    const throttleEl = this.shadowRoot.getElementById('throttle');
+    const speedEl = this.shadowRoot.getElementById('speed-display');
+    if (throttleState && throttleEl && speedEl) {
       const value = parseFloat(throttleState.state) || 0;
-      this.shadowRoot.getElementById('throttle').value = value;
-      this.shadowRoot.getElementById('speed-display').textContent = `${Math.round(value)}%`;
+      throttleEl.value = value;
+      speedEl.textContent = `${Math.round(value)}%`;
     }
 
     // Update lights button state
-    const lightsEntity = `switch.${this._getEntityId('lights')}`;
+    const lightsEntity = this._getEntityId('switch', 'lights');
     const lightsState = this._hass.states[lightsEntity];
     const lightsBtn = this.shadowRoot.getElementById('btn-lights');
     if (lightsState && lightsBtn) {
@@ -429,7 +649,7 @@ class LionelTrainCard extends HTMLElement {
   }
 
   getCardSize() {
-    return 5;
+    return 7;
   }
 
   static getConfigElement() {
@@ -438,7 +658,7 @@ class LionelTrainCard extends HTMLElement {
 
   static getStubConfig() {
     return {
-      entity: 'number.lionel_train_throttle',
+      device: 'Polar Express',
       name: 'Lionel Train'
     };
   }
@@ -446,42 +666,106 @@ class LionelTrainCard extends HTMLElement {
 
 // Card Editor
 class LionelTrainCardEditor extends HTMLElement {
+  set hass(hass) {
+    this._hass = hass;
+    if (!this._rendered) {
+      this._render();
+    }
+  }
+
   setConfig(config) {
     this._config = config;
     this._render();
   }
 
+  _getLionelDevices() {
+    if (!this._hass) return [];
+    
+    // Find all Lionel train devices by looking for throttle entities
+    const devices = [];
+    const seen = new Set();
+    
+    Object.keys(this._hass.states).forEach(entityId => {
+      if (entityId.startsWith('number.') && entityId.endsWith('_throttle')) {
+        // Extract device name: number.polar_express_throttle -> Polar Express
+        const base = entityId.replace('number.', '').replace('_throttle', '');
+        const deviceName = base.split('_').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+        
+        if (!seen.has(deviceName)) {
+          seen.add(deviceName);
+          devices.push(deviceName);
+        }
+      }
+    });
+    
+    return devices;
+  }
+
   _render() {
+    this._rendered = true;
+    const devices = this._getLionelDevices();
+    
+    const deviceOptions = devices.length > 0 
+      ? devices.map(d => `<option value="${d}" ${this._config.device === d ? 'selected' : ''}>${d}</option>`).join('')
+      : '<option value="">No Lionel trains found</option>';
+
     this.innerHTML = `
       <style>
         .editor {
           padding: 16px;
         }
+        .editor .field {
+          margin-bottom: 16px;
+        }
         .editor label {
           display: block;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
           font-weight: 500;
+          color: var(--primary-text-color);
         }
+        .editor select,
         .editor input {
           width: 100%;
-          padding: 8px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          margin-bottom: 16px;
+          padding: 10px;
+          border: 1px solid var(--divider-color, #ccc);
+          border-radius: 8px;
+          background: var(--card-background-color, white);
+          color: var(--primary-text-color);
+          font-size: 14px;
           box-sizing: border-box;
+        }
+        .editor select:focus,
+        .editor input:focus {
+          outline: none;
+          border-color: var(--primary-color);
+        }
+        .editor .hint {
+          font-size: 12px;
+          color: var(--secondary-text-color);
+          margin-top: 4px;
         }
       </style>
       <div class="editor">
-        <label>Throttle Entity (number.xxx_throttle)</label>
-        <input type="text" id="entity" value="${this._config.entity || ''}">
+        <div class="field">
+          <label>Train Device</label>
+          <select id="device">
+            <option value="">Select a train...</option>
+            ${deviceOptions}
+          </select>
+          <div class="hint">Select your Lionel train from the list</div>
+        </div>
         
-        <label>Card Name</label>
-        <input type="text" id="name" value="${this._config.name || ''}">
+        <div class="field">
+          <label>Card Name (optional)</label>
+          <input type="text" id="name" value="${this._config.name || ''}" placeholder="Leave blank to use device name">
+        </div>
       </div>
     `;
 
-    this.querySelector('#entity').addEventListener('change', (e) => {
-      this._config = { ...this._config, entity: e.target.value };
+    this.querySelector('#device').addEventListener('change', (e) => {
+      this._config = { ...this._config, device: e.target.value };
       this._fireEvent();
     });
 
