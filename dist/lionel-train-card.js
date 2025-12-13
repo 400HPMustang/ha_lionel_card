@@ -1168,6 +1168,7 @@ class LionelTrainCard extends HTMLElement {
 
     // Create track and train
     this._createMountains3D();
+    this._createTown3D();
     this._createTrack3D();
     this._createTrain3D();
     this._createTrees3D();
@@ -1622,6 +1623,273 @@ class LionelTrainCard extends HTMLElement {
       mountain.position.set(m.x, m.height / 2, m.z);
       this._scene3d.add(mountain);
     });
+  }
+
+  _createTown3D() {
+    const THREE = window.THREE;
+    
+    // Building materials
+    const brickMat = new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.9 });
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969, roughness: 0.8 });
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.85 });
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x2d1810, roughness: 0.7 });
+    const snowRoofMat = new THREE.MeshStandardMaterial({ color: 0xf0f5f8 });
+    const windowMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+    const darkWindowMat = new THREE.MeshBasicMaterial({ color: 0x334455 });
+
+    // Town buildings positioned outside the track on the left side
+    const buildings = [
+      { x: -75, z: 20, w: 12, h: 14, d: 10, mat: brickMat, roofType: 'peaked' },
+      { x: -85, z: 35, w: 10, h: 10, d: 8, mat: woodMat, roofType: 'peaked' },
+      { x: -70, z: 45, w: 14, h: 18, d: 12, mat: stoneMat, roofType: 'peaked' },
+      { x: -90, z: 55, w: 8, h: 8, d: 8, mat: woodMat, roofType: 'flat' },
+      { x: -75, z: 65, w: 11, h: 12, d: 9, mat: brickMat, roofType: 'peaked' },
+    ];
+
+    buildings.forEach(b => {
+      const building = new THREE.Group();
+
+      // Main structure
+      const body = new THREE.Mesh(new THREE.BoxGeometry(b.w, b.h, b.d), b.mat);
+      body.position.y = b.h / 2;
+      body.castShadow = true;
+      body.receiveShadow = true;
+      building.add(body);
+
+      // Roof
+      if (b.roofType === 'peaked') {
+        const roofHeight = b.w * 0.4;
+        const roof = new THREE.Mesh(
+          new THREE.ConeGeometry(Math.max(b.w, b.d) * 0.75, roofHeight, 4),
+          roofMat
+        );
+        roof.position.y = b.h + roofHeight / 2;
+        roof.rotation.y = Math.PI / 4;
+        roof.castShadow = true;
+        building.add(roof);
+
+        // Snow on roof
+        const snowRoof = new THREE.Mesh(
+          new THREE.ConeGeometry(Math.max(b.w, b.d) * 0.78, roofHeight * 0.3, 4),
+          snowRoofMat
+        );
+        snowRoof.position.y = b.h + roofHeight * 0.7;
+        snowRoof.rotation.y = Math.PI / 4;
+        building.add(snowRoof);
+      } else {
+        // Flat roof with snow
+        const flatRoof = new THREE.Mesh(
+          new THREE.BoxGeometry(b.w + 0.5, 0.5, b.d + 0.5),
+          roofMat
+        );
+        flatRoof.position.y = b.h + 0.25;
+        building.add(flatRoof);
+
+        const snowLayer = new THREE.Mesh(
+          new THREE.BoxGeometry(b.w + 0.3, 0.4, b.d + 0.3),
+          snowRoofMat
+        );
+        snowLayer.position.y = b.h + 0.7;
+        building.add(snowLayer);
+      }
+
+      // Windows
+      const numWindowsX = Math.floor(b.w / 4);
+      const numWindowsY = Math.floor(b.h / 5);
+      for (let wy = 0; wy < numWindowsY; wy++) {
+        for (let wx = 0; wx < numWindowsX; wx++) {
+          const isLit = Math.random() > 0.3;
+          const winX = (wx - (numWindowsX - 1) / 2) * 3;
+          const winY = 3 + wy * 4;
+          
+          // Front windows
+          const winFront = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.5, 2),
+            isLit ? windowMat : darkWindowMat
+          );
+          winFront.position.set(winX, winY, b.d / 2 + 0.1);
+          building.add(winFront);
+
+          // Back windows
+          const winBack = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.5, 2),
+            isLit ? windowMat : darkWindowMat
+          );
+          winBack.position.set(winX, winY, -b.d / 2 - 0.1);
+          winBack.rotation.y = Math.PI;
+          building.add(winBack);
+        }
+      }
+
+      // Door
+      const door = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 3.5, 0.3),
+        new THREE.MeshStandardMaterial({ color: 0x3d2817 })
+      );
+      door.position.set(0, 1.75, b.d / 2);
+      building.add(door);
+
+      building.position.set(b.x, 0, b.z);
+      this._scene3d.add(building);
+    });
+
+    // Church/Chapel with steeple
+    const church = new THREE.Group();
+    const churchBody = new THREE.Mesh(new THREE.BoxGeometry(14, 12, 20), stoneMat);
+    churchBody.position.y = 6;
+    churchBody.castShadow = true;
+    church.add(churchBody);
+
+    // Church roof
+    const churchRoof = new THREE.Mesh(
+      new THREE.CylinderGeometry(0, 12, 8, 4),
+      roofMat
+    );
+    churchRoof.position.y = 16;
+    churchRoof.rotation.y = Math.PI / 4;
+    church.add(churchRoof);
+
+    // Snow on church roof
+    const churchSnow = new THREE.Mesh(
+      new THREE.CylinderGeometry(0, 12.5, 2, 4),
+      snowRoofMat
+    );
+    churchSnow.position.y = 13;
+    churchSnow.rotation.y = Math.PI / 4;
+    church.add(churchSnow);
+
+    // Steeple
+    const steeple = new THREE.Mesh(new THREE.BoxGeometry(5, 10, 5), stoneMat);
+    steeple.position.set(0, 17, -6);
+    church.add(steeple);
+
+    const spire = new THREE.Mesh(
+      new THREE.ConeGeometry(3.5, 12, 4),
+      roofMat
+    );
+    spire.position.set(0, 28, -6);
+    spire.rotation.y = Math.PI / 4;
+    church.add(spire);
+
+    // Church windows (stained glass effect)
+    const stainedGlassMat = new THREE.MeshBasicMaterial({ color: 0xffcc66 });
+    for (let z = -6; z <= 6; z += 6) {
+      const churchWin = new THREE.Mesh(new THREE.PlaneGeometry(2, 4), stainedGlassMat);
+      churchWin.position.set(7.1, 6, z);
+      churchWin.rotation.y = Math.PI / 2;
+      church.add(churchWin);
+      
+      const churchWin2 = new THREE.Mesh(new THREE.PlaneGeometry(2, 4), stainedGlassMat);
+      churchWin2.position.set(-7.1, 6, z);
+      churchWin2.rotation.y = -Math.PI / 2;
+      church.add(churchWin2);
+    }
+
+    church.position.set(80, 0, 50);
+    this._scene3d.add(church);
+
+    // Water tower
+    const waterTower = new THREE.Group();
+    
+    // Legs
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 2) {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 15, 8), legMat);
+      leg.position.set(Math.cos(angle) * 4, 7.5, Math.sin(angle) * 4);
+      waterTower.add(leg);
+    }
+
+    // Tank
+    const tank = new THREE.Mesh(
+      new THREE.CylinderGeometry(6, 5, 8, 12),
+      new THREE.MeshStandardMaterial({ color: 0x5a4a3a, roughness: 0.7 })
+    );
+    tank.position.y = 18;
+    waterTower.add(tank);
+
+    // Conical roof
+    const tankRoof = new THREE.Mesh(
+      new THREE.ConeGeometry(6.5, 4, 12),
+      roofMat
+    );
+    tankRoof.position.y = 24;
+    waterTower.add(tankRoof);
+
+    // Snow on tank roof
+    const tankSnow = new THREE.Mesh(
+      new THREE.ConeGeometry(6.8, 1, 12),
+      snowRoofMat
+    );
+    tankSnow.position.y = 23;
+    waterTower.add(tankSnow);
+
+    waterTower.position.set(70, 0, -70);
+    this._scene3d.add(waterTower);
+
+    // Street lamps around town
+    const lampPositions = [
+      { x: -65, z: 30 },
+      { x: -65, z: 50 },
+      { x: -65, z: 70 },
+      { x: 75, z: 30 },
+      { x: 75, z: 70 },
+    ];
+
+    lampPositions.forEach(pos => {
+      const lamp = new THREE.Group();
+      
+      // Pole
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.2, 0.3, 6, 8),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a })
+      );
+      pole.position.y = 3;
+      lamp.add(pole);
+
+      // Lamp housing
+      const housing = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 1.2, 1.2),
+        new THREE.MeshStandardMaterial({ color: 0x2a2a2a })
+      );
+      housing.position.y = 6.5;
+      lamp.add(housing);
+
+      // Glow
+      const glow = new THREE.Mesh(
+        new THREE.SphereGeometry(0.4, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffffcc })
+      );
+      glow.position.y = 6;
+      lamp.add(glow);
+
+      // Point light
+      const light = new THREE.PointLight(0xffffaa, 0.3, 20);
+      light.position.y = 6;
+      lamp.add(light);
+
+      lamp.position.set(pos.x, 0, pos.z);
+      this._scene3d.add(lamp);
+    });
+
+    // Fence along town edge
+    const fenceMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5 });
+    for (let z = 15; z <= 75; z += 3) {
+      // Fence post
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2.5, 0.3), fenceMat);
+      post.position.set(-60, 1.25, z);
+      this._scene3d.add(post);
+
+      // Horizontal rails
+      if (z < 75) {
+        const rail1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 3), fenceMat);
+        rail1.position.set(-60, 0.8, z + 1.5);
+        this._scene3d.add(rail1);
+        
+        const rail2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 3), fenceMat);
+        rail2.position.set(-60, 1.8, z + 1.5);
+        this._scene3d.add(rail2);
+      }
+    }
   }
 
   _createTrees3D() {
