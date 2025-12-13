@@ -16,12 +16,11 @@ class LionelTrainCard extends HTMLElement {
   }
 
   setConfig(config) {
-    if (!config.device) {
-      throw new Error('You need to select a train device');
+    this._config = config || {};
+    this._deviceName = this._config.device || '';
+    if (this._deviceName) {
+      this._render();
     }
-    this._config = config;
-    this._deviceName = config.device;
-    this._render();
   }
 
   _getEntityId(domain, suffix) {
