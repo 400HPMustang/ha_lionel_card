@@ -1651,6 +1651,19 @@ class LionelTrainCard extends HTMLElement {
       { x: -70, z: 45, w: 14, h: 18, d: 12, mat: stoneMat, roofType: 'peaked' },
       { x: -90, z: 55, w: 8, h: 8, d: 8, mat: woodMat, roofType: 'flat' },
       { x: -75, z: 65, w: 11, h: 12, d: 9, mat: brickMat, roofType: 'peaked' },
+      // Additional buildings on right side
+      { x: 75, z: 20, w: 10, h: 12, d: 9, mat: brickMat, roofType: 'peaked' },
+      { x: 85, z: 35, w: 12, h: 15, d: 10, mat: stoneMat, roofType: 'peaked' },
+      { x: 70, z: -20, w: 9, h: 10, d: 8, mat: woodMat, roofType: 'peaked' },
+      { x: 80, z: -35, w: 11, h: 13, d: 9, mat: brickMat, roofType: 'peaked' },
+      // Buildings near station
+      { x: -30, z: -75, w: 10, h: 11, d: 8, mat: woodMat, roofType: 'peaked' },
+      { x: 30, z: -75, w: 12, h: 14, d: 10, mat: brickMat, roofType: 'peaked' },
+      // More scattered buildings
+      { x: -95, z: 0, w: 8, h: 9, d: 7, mat: woodMat, roofType: 'flat' },
+      { x: -80, z: -15, w: 10, h: 12, d: 8, mat: stoneMat, roofType: 'peaked' },
+      { x: 90, z: 0, w: 9, h: 10, d: 8, mat: brickMat, roofType: 'peaked' },
+      { x: 95, z: -20, w: 8, h: 8, d: 7, mat: woodMat, roofType: 'flat' },
     ];
 
     buildings.forEach(b => {
@@ -1921,6 +1934,55 @@ class LionelTrainCard extends HTMLElement {
     const star = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), new THREE.MeshStandardMaterial({ color: 0xFFD700, emissive: 0xFFD700, emissiveIntensity: 0.5 }));
     star.position.y = 22;
     centerTree.add(star);
+
+    // Christmas lights on tree - spiral pattern
+    const lightColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500];
+    this._christmasLights = [];
+    for (let layer = 0; layer < 4; layer++) {
+      const layerY = layer * 5 + 2;
+      const layerRadius = 7 * (1.0 - layer * 0.2);
+      const numLights = Math.floor(12 - layer * 2);
+      
+      for (let i = 0; i < numLights; i++) {
+        const angle = (i / numLights) * Math.PI * 2 + layer * 0.5;
+        const x = Math.cos(angle) * layerRadius;
+        const z = Math.sin(angle) * layerRadius;
+        
+        const lightColor = lightColors[Math.floor(Math.random() * lightColors.length)];
+        const lightBulb = new THREE.Mesh(
+          new THREE.SphereGeometry(0.3, 8, 8),
+          new THREE.MeshBasicMaterial({ color: lightColor })
+        );
+        lightBulb.position.set(x, layerY, z);
+        centerTree.add(lightBulb);
+        this._christmasLights.push({ mesh: lightBulb, baseColor: lightColor });
+        
+        // Add small point light for glow effect
+        const pointLight = new THREE.PointLight(lightColor, 0.15, 5);
+        pointLight.position.set(x, layerY, z);
+        centerTree.add(pointLight);
+      }
+    }
+
+    // Additional string of lights going up the tree
+    for (let i = 0; i < 30; i++) {
+      const t = i / 30;
+      const spiralAngle = t * Math.PI * 6;
+      const spiralY = t * 20 + 2;
+      const spiralRadius = 7 * (1 - t * 0.7);
+      const x = Math.cos(spiralAngle) * spiralRadius;
+      const z = Math.sin(spiralAngle) * spiralRadius;
+      
+      const lightColor = lightColors[i % lightColors.length];
+      const lightBulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.25, 6, 6),
+        new THREE.MeshBasicMaterial({ color: lightColor })
+      );
+      lightBulb.position.set(x, spiralY, z);
+      centerTree.add(lightBulb);
+      this._christmasLights.push({ mesh: lightBulb, baseColor: lightColor });
+    }
+
     this._scene3d.add(centerTree);
 
     // Surrounding trees
