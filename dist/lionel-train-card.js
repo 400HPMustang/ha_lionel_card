@@ -398,6 +398,128 @@ class LionelTrainCard extends HTMLElement {
           opacity: 0.4;
           pointer-events: none;
         }
+        
+        /* Expandable Settings Section */
+        .settings-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          margin-top: 16px;
+          background: var(--surface-color);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .settings-toggle:hover {
+          background: var(--surface-hover);
+        }
+        
+        .settings-toggle-label {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 0.9em;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+        
+        .settings-toggle-label svg {
+          width: 20px;
+          height: 20px;
+        }
+        
+        .settings-toggle-icon {
+          width: 20px;
+          height: 20px;
+          color: var(--text-secondary);
+          transition: transform 0.3s ease;
+        }
+        
+        .settings-toggle-icon.expanded {
+          transform: rotate(180deg);
+        }
+        
+        .settings-content {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease;
+        }
+        
+        .settings-content.expanded {
+          max-height: 500px;
+        }
+        
+        .settings-inner {
+          padding: 16px 0;
+        }
+        
+        /* Volume Sliders */
+        .volume-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        
+        .volume-row:last-child {
+          margin-bottom: 0;
+        }
+        
+        .volume-label {
+          min-width: 80px;
+          font-size: 0.8em;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .volume-label svg {
+          width: 16px;
+          height: 16px;
+        }
+        
+        .volume-slider {
+          flex: 1;
+          height: 6px;
+          -webkit-appearance: none;
+          appearance: none;
+          background: var(--surface-hover);
+          border-radius: 3px;
+          outline: none;
+          cursor: pointer;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          background: var(--primary-color);
+          border-radius: 50%;
+          cursor: grab;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .volume-slider::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          background: var(--primary-color);
+          border: none;
+          border-radius: 50%;
+          cursor: grab;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .volume-value {
+          min-width: 24px;
+          text-align: center;
+          font-size: 0.85em;
+          font-weight: 600;
+          color: var(--primary-color);
+        }
       </style>
       
       <ha-card>
@@ -518,6 +640,63 @@ class LionelTrainCard extends HTMLElement {
             </button>
           </div>
           
+          <!-- Expandable Settings Section -->
+          <div class="settings-toggle" id="settings-toggle">
+            <div class="settings-toggle-label">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+              </svg>
+              Volume Settings
+            </div>
+            <svg class="settings-toggle-icon" id="settings-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+            </svg>
+          </div>
+          <div class="settings-content" id="settings-content">
+            <div class="settings-inner">
+              <div class="volume-row">
+                <div class="volume-label">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
+                  Master
+                </div>
+                <input type="range" class="volume-slider" id="vol-master" min="0" max="7" value="5">
+                <span class="volume-value" id="vol-master-val">5</span>
+              </div>
+              <div class="volume-row">
+                <div class="volume-label">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,1C7,1 3,5 3,10V17A3,3 0 0,0 6,20H9V12H5V10A7,7 0 0,1 12,3A7,7 0 0,1 19,10V12H15V20H18A3,3 0 0,0 21,17V10C21,5 17,1 12,1Z"/></svg>
+                  Horn
+                </div>
+                <input type="range" class="volume-slider" id="vol-horn" min="0" max="7" value="5">
+                <span class="volume-value" id="vol-horn-val">5</span>
+              </div>
+              <div class="volume-row">
+                <div class="volume-label">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21,19V20H3V19L5,17V11C5,7.9 7.03,5.17 10,4.29C10,4.19 10,4.1 10,4A2,2 0 0,1 12,2A2,2 0 0,1 14,4C14,4.1 14,4.19 14,4.29C16.97,5.17 19,7.9 19,11V17L21,19M14,21A2,2 0 0,1 12,23A2,2 0 0,1 10,21"/></svg>
+                  Bell
+                </div>
+                <input type="range" class="volume-slider" id="vol-bell" min="0" max="7" value="5">
+                <span class="volume-value" id="vol-bell-val">5</span>
+              </div>
+              <div class="volume-row">
+                <div class="volume-label">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/></svg>
+                  Speech
+                </div>
+                <input type="range" class="volume-slider" id="vol-speech" min="0" max="7" value="5">
+                <span class="volume-value" id="vol-speech-val">5</span>
+              </div>
+              <div class="volume-row">
+                <div class="volume-label">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,4L3,7L4.5,8.5L3,10V11H21V10L19.5,8.5L21,7L12,4M3,12V15H5V19H3V21H21V19H19V15H21V12H3Z"/></svg>
+                  Engine
+                </div>
+                <input type="range" class="volume-slider" id="vol-engine" min="0" max="7" value="5">
+                <span class="volume-value" id="vol-engine-val">5</span>
+              </div>
+            </div>
+          </div>
+          
           <button class="stop-btn" id="btn-stop">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M18,18H6V6H18V18Z"/>
@@ -584,6 +763,45 @@ class LionelTrainCard extends HTMLElement {
         btn.addEventListener('click', () => this._pressButton(`announcement_${name}`));
       }
     });
+
+    // Settings toggle
+    const settingsToggle = this.shadowRoot.getElementById('settings-toggle');
+    const settingsContent = this.shadowRoot.getElementById('settings-content');
+    const settingsIcon = this.shadowRoot.getElementById('settings-icon');
+    
+    settingsToggle.addEventListener('click', () => {
+      settingsContent.classList.toggle('expanded');
+      settingsIcon.classList.toggle('expanded');
+    });
+
+    // Volume sliders
+    const volumeControls = [
+      { id: 'vol-master', entity: 'master_volume' },
+      { id: 'vol-horn', entity: 'horn_volume' },
+      { id: 'vol-bell', entity: 'bell_volume' },
+      { id: 'vol-speech', entity: 'speech_volume' },
+      { id: 'vol-engine', entity: 'engine_volume' },
+    ];
+
+    volumeControls.forEach(({ id, entity }) => {
+      const slider = this.shadowRoot.getElementById(id);
+      const valueDisplay = this.shadowRoot.getElementById(`${id}-val`);
+      if (slider) {
+        slider.addEventListener('input', (e) => {
+          const value = parseInt(e.target.value);
+          valueDisplay.textContent = value;
+          this._setVolume(entity, value);
+        });
+      }
+    });
+  }
+
+  _setVolume(entity, value) {
+    const entityId = this._getEntityId('number', entity);
+    this._hass.callService('number', 'set_value', {
+      entity_id: entityId,
+      value: value
+    });
   }
 
   _setThrottle(value) {
@@ -645,6 +863,27 @@ class LionelTrainCard extends HTMLElement {
         lightsBtn.classList.remove('active');
       }
     }
+
+    // Update volume sliders
+    const volumeControls = [
+      { id: 'vol-master', entity: 'master_volume' },
+      { id: 'vol-horn', entity: 'horn_volume' },
+      { id: 'vol-bell', entity: 'bell_volume' },
+      { id: 'vol-speech', entity: 'speech_volume' },
+      { id: 'vol-engine', entity: 'engine_volume' },
+    ];
+
+    volumeControls.forEach(({ id, entity }) => {
+      const volumeEntity = this._getEntityId('number', entity);
+      const volumeState = this._hass.states[volumeEntity];
+      const slider = this.shadowRoot.getElementById(id);
+      const valueDisplay = this.shadowRoot.getElementById(`${id}-val`);
+      if (volumeState && slider && valueDisplay) {
+        const value = parseFloat(volumeState.state) || 0;
+        slider.value = value;
+        valueDisplay.textContent = Math.round(value);
+      }
+    });
   }
 
   getCardSize() {
