@@ -1041,12 +1041,19 @@ class LionelTrainCard extends HTMLElement {
       }
     }
 
-    // Get direction state
-    const directionEntity = this._getEntityId('switch', 'direction');
-    const directionState = this._hass.states[directionEntity];
+    // Get direction state from sensor (more accurate than switch)
+    const directionSensorEntity = this._getEntityId('sensor', 'direction');
+    const directionSensorState = this._hass.states[directionSensorEntity];
     let isForward = true;
-    if (directionState) {
-      isForward = directionState.state === 'on';
+    if (directionSensorState) {
+      isForward = directionSensorState.state === 'forward';
+    } else {
+      // Fallback to switch if sensor not available
+      const directionEntity = this._getEntityId('switch', 'direction');
+      const directionState = this._hass.states[directionEntity];
+      if (directionState) {
+        isForward = directionState.state === 'on';
+      }
     }
 
     // Update train animation
@@ -1429,7 +1436,7 @@ class LionelTrainCard extends HTMLElement {
     this._addBogie3D(tenderGroup, -3.5);
     this._addBogie3D(tenderGroup, 3.5);
     this._scene3d.add(tenderGroup);
-    this._trainCars.push({ mesh: tenderGroup, offset: 0.038 });
+    this._trainCars.push({ mesh: tenderGroup, offset: 0.045 });
 
     // Passenger cars
     const isPolarExpress = this._trainModel === 'Polar Express';
@@ -1492,7 +1499,7 @@ class LionelTrainCard extends HTMLElement {
       this._addBogie3D(carGroup, -4.5);
       this._addBogie3D(carGroup, 4.5);
       this._scene3d.add(carGroup);
-      this._trainCars.push({ mesh: carGroup, offset: 0.075 + (i * 0.038) });
+      this._trainCars.push({ mesh: carGroup, offset: 0.095 + (i * 0.048) });
     }
   }
 
