@@ -2,6 +2,7 @@
  * Lionel Train Controller Card
  * A custom Lovelace card for controlling Lionel LionChief trains
  * https://github.com/BlackandBlue1908/ha_lionel_card
+ * Version: 1.2.0 - Oval track with Polar Express design
  */
 
 // Train model announcement name mappings
