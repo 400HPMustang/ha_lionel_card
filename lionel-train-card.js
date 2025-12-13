@@ -145,6 +145,215 @@ class LionelTrainCard extends HTMLElement {
           background: var(--danger-color);
           color: white;
         }
+
+        /* Train Animation Section */
+        .train-animation {
+          background: var(--surface-color);
+          border-radius: 12px;
+          padding: 16px;
+          margin-bottom: 16px;
+          position: relative;
+          height: 120px;
+          overflow: hidden;
+        }
+
+        .track {
+          position: absolute;
+          top: 50%;
+          left: 10%;
+          right: 10%;
+          height: 8px;
+          background: linear-gradient(to bottom, #5a5a5a 0%, #3a3a3a 50%, #5a5a5a 100%);
+          border-radius: 4px;
+          transform: translateY(-50%);
+        }
+
+        .track::before,
+        .track::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          width: 20px;
+          height: 20px;
+          background: var(--surface-color);
+          border: 3px solid #5a5a5a;
+          border-radius: 50%;
+          transform: translateY(-50%);
+        }
+
+        .track::before {
+          left: -10px;
+        }
+
+        .track::after {
+          right: -10px;
+        }
+
+        .track-ties {
+          position: absolute;
+          top: 50%;
+          left: 10%;
+          right: 10%;
+          height: 20px;
+          transform: translateY(-50%);
+          display: flex;
+          justify-content: space-between;
+          padding: 0 15px;
+          z-index: 0;
+        }
+
+        .tie {
+          width: 4px;
+          height: 100%;
+          background: #4a3a2a;
+          border-radius: 1px;
+        }
+
+        .train-container {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 2;
+          transition: left 0.3s ease-out;
+        }
+
+        .train {
+          display: flex;
+          align-items: center;
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+        }
+
+        .train.reverse {
+          transform: scaleX(-1);
+        }
+
+        .locomotive {
+          position: relative;
+          width: 60px;
+          height: 40px;
+          background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
+          border-radius: 8px 20px 4px 4px;
+          border: 2px solid #3a3a3a;
+        }
+
+        .locomotive::before {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: 5px;
+          right: 5px;
+          height: 8px;
+          background: #1a1a1a;
+          border-radius: 2px;
+        }
+
+        .cab {
+          position: absolute;
+          top: -8px;
+          right: 5px;
+          width: 25px;
+          height: 15px;
+          background: linear-gradient(to bottom, #3a3a3a 0%, #2a2a2a 100%);
+          border-radius: 4px 4px 0 0;
+          border: 1px solid #4a4a4a;
+        }
+
+        .smokestack {
+          position: absolute;
+          top: -15px;
+          left: 12px;
+          width: 10px;
+          height: 12px;
+          background: linear-gradient(to bottom, #4a4a4a 0%, #2a2a2a 100%);
+          border-radius: 3px 3px 0 0;
+        }
+
+        .headlight {
+          position: absolute;
+          top: 10px;
+          left: -4px;
+          width: 8px;
+          height: 8px;
+          background: #333;
+          border-radius: 50%;
+          transition: all 0.3s ease;
+        }
+
+        .headlight.on {
+          background: #ffeb3b;
+          box-shadow: 0 0 15px 5px rgba(255, 235, 59, 0.6), 0 0 30px 10px rgba(255, 235, 59, 0.3);
+        }
+
+        .wheel {
+          position: absolute;
+          bottom: -8px;
+          width: 12px;
+          height: 12px;
+          background: #2a2a2a;
+          border: 2px solid #5a5a5a;
+          border-radius: 50%;
+        }
+
+        .wheel.w1 { left: 8px; }
+        .wheel.w2 { left: 25px; }
+        .wheel.w3 { right: 8px; }
+
+        .wheel-inner {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 4px;
+          height: 4px;
+          background: #7a7a7a;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .smoke {
+          position: absolute;
+          top: -25px;
+          left: 14px;
+          opacity: 0;
+        }
+
+        .smoke.active .smoke-puff {
+          animation: smoke-rise 1.5s ease-out infinite;
+        }
+
+        .smoke-puff {
+          width: 8px;
+          height: 8px;
+          background: rgba(200, 200, 200, 0.6);
+          border-radius: 50%;
+          position: absolute;
+        }
+
+        .smoke-puff:nth-child(1) { animation-delay: 0s; }
+        .smoke-puff:nth-child(2) { animation-delay: 0.3s; left: 5px; }
+        .smoke-puff:nth-child(3) { animation-delay: 0.6s; left: -3px; }
+
+        @keyframes smoke-rise {
+          0% {
+            opacity: 0.8;
+            transform: translateY(0) scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-20px) scale(2);
+          }
+        }
+
+        .train-status-text {
+          position: absolute;
+          bottom: 8px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 0.75em;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
         
         /* Throttle Section */
         .throttle-section {
@@ -584,6 +793,34 @@ class LionelTrainCard extends HTMLElement {
             </div>
             <div class="status disconnected" id="status">Disconnected</div>
           </div>
+
+          <!-- Animated Train Display -->
+          <div class="train-animation">
+            <div class="track-ties">
+              <div class="tie"></div><div class="tie"></div><div class="tie"></div><div class="tie"></div>
+              <div class="tie"></div><div class="tie"></div><div class="tie"></div><div class="tie"></div>
+              <div class="tie"></div><div class="tie"></div><div class="tie"></div><div class="tie"></div>
+            </div>
+            <div class="track"></div>
+            <div class="train-container" id="train-container" style="left: 50%;">
+              <div class="train" id="train">
+                <div class="locomotive">
+                  <div class="cab"></div>
+                  <div class="smokestack"></div>
+                  <div class="headlight" id="train-headlight"></div>
+                  <div class="smoke" id="train-smoke">
+                    <div class="smoke-puff"></div>
+                    <div class="smoke-puff"></div>
+                    <div class="smoke-puff"></div>
+                  </div>
+                  <div class="wheel w1"><div class="wheel-inner"></div></div>
+                  <div class="wheel w2"><div class="wheel-inner"></div></div>
+                  <div class="wheel w3"><div class="wheel-inner"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="train-status-text" id="train-status-text">Stopped</div>
+          </div>
           
           <div class="throttle-section">
             <div class="throttle-header">
@@ -897,23 +1134,47 @@ class LionelTrainCard extends HTMLElement {
     const throttleState = this._hass.states[throttleEntity];
     const throttleEl = this.shadowRoot.getElementById('throttle');
     const speedEl = this.shadowRoot.getElementById('speed-display');
+    let currentSpeed = 0;
     if (throttleState && throttleEl && speedEl) {
-      const value = parseFloat(throttleState.state) || 0;
-      throttleEl.value = value;
-      speedEl.textContent = `${Math.round(value)}%`;
+      currentSpeed = parseFloat(throttleState.state) || 0;
+      throttleEl.value = currentSpeed;
+      speedEl.textContent = `${Math.round(currentSpeed)}%`;
     }
 
-    // Update lights button state
+    // Update lights button state and train headlight
     const lightsEntity = this._getEntityId('switch', 'lights');
     const lightsState = this._hass.states[lightsEntity];
     const lightsBtn = this.shadowRoot.getElementById('btn-lights');
-    if (lightsState && lightsBtn) {
-      if (lightsState.state === 'on') {
-        lightsBtn.classList.add('active');
-      } else {
-        lightsBtn.classList.remove('active');
+    const trainHeadlight = this.shadowRoot.getElementById('train-headlight');
+    let lightsOn = false;
+    if (lightsState) {
+      lightsOn = lightsState.state === 'on';
+      if (lightsBtn) {
+        if (lightsOn) {
+          lightsBtn.classList.add('active');
+        } else {
+          lightsBtn.classList.remove('active');
+        }
+      }
+      if (trainHeadlight) {
+        if (lightsOn) {
+          trainHeadlight.classList.add('on');
+        } else {
+          trainHeadlight.classList.remove('on');
+        }
       }
     }
+
+    // Get direction state
+    const directionEntity = this._getEntityId('switch', 'direction');
+    const directionState = this._hass.states[directionEntity];
+    let isForward = true;
+    if (directionState) {
+      isForward = directionState.state === 'on';
+    }
+
+    // Update train animation
+    this._updateTrainAnimation(currentSpeed, isForward, lightsOn);
 
     // Update volume sliders
     const volumeControls = [
@@ -935,6 +1196,87 @@ class LionelTrainCard extends HTMLElement {
         valueDisplay.textContent = Math.round(value);
       }
     });
+  }
+
+  _updateTrainAnimation(speed, isForward, lightsOn) {
+    const trainContainer = this.shadowRoot.getElementById('train-container');
+    const train = this.shadowRoot.getElementById('train');
+    const smoke = this.shadowRoot.getElementById('train-smoke');
+    const statusText = this.shadowRoot.getElementById('train-status-text');
+
+    if (!trainContainer || !train || !smoke || !statusText) return;
+
+    // Update train direction (flip the train)
+    if (isForward) {
+      train.classList.remove('reverse');
+    } else {
+      train.classList.add('reverse');
+    }
+
+    // Update smoke animation based on speed
+    if (speed > 0) {
+      smoke.classList.add('active');
+      smoke.style.opacity = Math.min(0.3 + (speed / 100) * 0.7, 1);
+    } else {
+      smoke.classList.remove('active');
+      smoke.style.opacity = 0;
+    }
+
+    // Animate train position based on speed
+    if (speed > 0) {
+      // Start or update animation
+      if (!this._trainAnimationId) {
+        this._trainPosition = this._trainPosition || 50;
+        this._animateTrain(speed, isForward);
+      }
+      this._trainSpeed = speed;
+      this._trainDirection = isForward;
+    } else {
+      // Stop animation
+      if (this._trainAnimationId) {
+        cancelAnimationFrame(this._trainAnimationId);
+        this._trainAnimationId = null;
+      }
+    }
+
+    // Update status text
+    if (speed === 0) {
+      statusText.textContent = 'Stopped';
+    } else if (speed < 30) {
+      statusText.textContent = isForward ? 'Crawling Forward' : 'Crawling Backward';
+    } else if (speed < 60) {
+      statusText.textContent = isForward ? 'Moving Forward' : 'Moving Backward';
+    } else {
+      statusText.textContent = isForward ? 'Full Speed Ahead!' : 'Full Speed Reverse!';
+    }
+  }
+
+  _animateTrain(speed, isForward) {
+    const trainContainer = this.shadowRoot.getElementById('train-container');
+    if (!trainContainer) return;
+
+    const animate = () => {
+      if (!this._trainSpeed || this._trainSpeed === 0) {
+        this._trainAnimationId = null;
+        return;
+      }
+
+      // Calculate movement based on speed (0.02 to 0.5 per frame)
+      const moveAmount = 0.02 + (this._trainSpeed / 100) * 0.48;
+      
+      if (this._trainDirection) {
+        this._trainPosition += moveAmount;
+        if (this._trainPosition > 85) this._trainPosition = 15;
+      } else {
+        this._trainPosition -= moveAmount;
+        if (this._trainPosition < 15) this._trainPosition = 85;
+      }
+
+      trainContainer.style.left = `${this._trainPosition}%`;
+      this._trainAnimationId = requestAnimationFrame(animate);
+    };
+
+    this._trainAnimationId = requestAnimationFrame(animate);
   }
 
   getCardSize() {
