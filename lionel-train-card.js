@@ -1429,7 +1429,7 @@ class LionelTrainCard extends HTMLElement {
     this._addBogie3D(tenderGroup, -3.5);
     this._addBogie3D(tenderGroup, 3.5);
     this._scene3d.add(tenderGroup);
-    this._trainCars.push({ mesh: tenderGroup, offset: 0.055 });
+    this._trainCars.push({ mesh: tenderGroup, offset: 0.038 });
 
     // Passenger cars
     const isPolarExpress = this._trainModel === 'Polar Express';
@@ -1492,7 +1492,7 @@ class LionelTrainCard extends HTMLElement {
       this._addBogie3D(carGroup, -4.5);
       this._addBogie3D(carGroup, 4.5);
       this._scene3d.add(carGroup);
-      this._trainCars.push({ mesh: carGroup, offset: 0.12 + (i * 0.045) });
+      this._trainCars.push({ mesh: carGroup, offset: 0.075 + (i * 0.038) });
     }
   }
 
@@ -2141,17 +2141,16 @@ class LionelTrainCard extends HTMLElement {
         const position = this._trainPath.getPointAt(carProg);
         car.mesh.position.copy(position);
         
-        // Look ahead or behind based on direction
-        let lookProg;
-        if (this._trainDirection3d) {
-          lookProg = carProg + 0.001;
-          if (lookProg > 1) lookProg -= 1;
-        } else {
-          lookProg = carProg - 0.001;
-          if (lookProg < 0) lookProg += 1;
-        }
+        // Always look ahead on track, then rotate 180 if in reverse
+        let lookProg = carProg + 0.002;
+        if (lookProg > 1) lookProg -= 1;
         const lookAtPos = this._trainPath.getPointAt(lookProg);
         car.mesh.lookAt(lookAtPos);
+        
+        // Rotate 180 degrees when going in reverse
+        if (!this._trainDirection3d) {
+          car.mesh.rotateY(Math.PI);
+        }
       });
 
       // Update smoke
