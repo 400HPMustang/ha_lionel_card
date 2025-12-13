@@ -37,15 +37,35 @@ class LionelTrainCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    this._updateTrainModel();
     this._updateCard();
   }
 
   setConfig(config) {
     this._config = config || {};
     this._deviceName = this._config.device || '';
-    this._trainModel = this._config.train_model || 'Generic';
+    this._trainModel = 'Generic'; // Will be updated from sensor
     if (this._deviceName) {
       this._render();
+    }
+  }
+
+  _updateTrainModel() {
+    if (!this._hass || !this._deviceName) return;
+    
+    // Read train model from the sensor entity
+    const trainModelEntity = this._getEntityId('sensor', 'train_model');
+    const trainModelState = this._hass.states[trainModelEntity];
+    
+    if (trainModelState && trainModelState.state) {
+      const newModel = trainModelState.state;
+      if (newModel !== this._trainModel && TRAIN_MODELS[newModel]) {
+        this._trainModel = newModel;
+        // Re-render to update announcement labels
+        if (this.shadowRoot.innerHTML) {
+          this._render();
+        }
+      }
     }
   }
 
@@ -981,15 +1001,10 @@ class LionelTrainCardEditor extends HTMLElement {
     const devices = this._getLionelDevices();
     const currentDevice = this._config.device || '';
     const currentName = this._config.name || '';
-    const currentModel = this._config.train_model || 'Generic';
     
     const deviceOptions = devices.length > 0 
       ? devices.map(d => `<option value="${d}" ${currentDevice === d ? 'selected' : ''}>${d}</option>`).join('')
       : '<option value="">No Lionel trains found</option>';
-
-    const modelOptions = TRAIN_MODEL_OPTIONS.map(m => 
-      `<option value="${m}" ${currentModel === m ? 'selected' : ''}>${m}</option>`
-    ).join('');
 
     this.innerHTML = `
       <style>
@@ -1036,14 +1051,6 @@ class LionelTrainCardEditor extends HTMLElement {
           </select>
           <div class="hint">Select your Lionel train from the list</div>
         </div>
-
-        <div class="field">
-          <label>Train Model</label>
-          <select id="train_model">
-            ${modelOptions}
-          </select>
-          <div class="hint">Select your train model for correct announcement labels</div>
-        </div>
         
         <div class="field">
           <label>Card Name (optional)</label>
@@ -1054,11 +1061,6 @@ class LionelTrainCardEditor extends HTMLElement {
 
     this.querySelector('#device').addEventListener('change', (e) => {
       this._config = { ...this._config, device: e.target.value };
-      this._fireEvent();
-    });
-
-    this.querySelector('#train_model').addEventListener('change', (e) => {
-      this._config = { ...this._config, train_model: e.target.value };
       this._fireEvent();
     });
 
