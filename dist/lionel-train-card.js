@@ -1167,6 +1167,7 @@ class LionelTrainCard extends HTMLElement {
     this._scene3d.add(ground);
 
     // Create track and train
+    this._createMountains3D();
     this._createTrack3D();
     this._createTrain3D();
     this._createTrees3D();
@@ -1508,6 +1509,119 @@ class LionelTrainCard extends HTMLElement {
       bogieGroup.add(w);
     });
     parent.add(bogieGroup);
+  }
+
+  _createMountains3D() {
+    const THREE = window.THREE;
+    
+    // Mountain materials - different shades for depth
+    const farMountainMat = new THREE.MeshStandardMaterial({ color: 0x2a3a4a, flatShading: true });
+    const midMountainMat = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, flatShading: true });
+    const nearMountainMat = new THREE.MeshStandardMaterial({ color: 0x4a5a6a, flatShading: true });
+    const snowCapMat = new THREE.MeshStandardMaterial({ color: 0xeef4f8 });
+
+    // Far mountain range (backdrop)
+    const farMountains = [
+      { x: -180, z: -200, height: 80, width: 60 },
+      { x: -120, z: -220, height: 100, width: 70 },
+      { x: -60, z: -210, height: 90, width: 65 },
+      { x: 0, z: -230, height: 120, width: 80 },
+      { x: 60, z: -215, height: 95, width: 68 },
+      { x: 120, z: -225, height: 110, width: 75 },
+      { x: 180, z: -205, height: 85, width: 62 },
+    ];
+
+    farMountains.forEach(m => {
+      const mountain = new THREE.Mesh(
+        new THREE.ConeGeometry(m.width, m.height, 6),
+        farMountainMat
+      );
+      mountain.position.set(m.x, m.height / 2, m.z);
+      mountain.rotation.y = Math.random() * Math.PI;
+      this._scene3d.add(mountain);
+
+      // Snow cap
+      const snowCap = new THREE.Mesh(
+        new THREE.ConeGeometry(m.width * 0.4, m.height * 0.25, 6),
+        snowCapMat
+      );
+      snowCap.position.set(m.x, m.height * 0.75, m.z);
+      snowCap.rotation.y = mountain.rotation.y;
+      this._scene3d.add(snowCap);
+    });
+
+    // Mid-range mountains
+    const midMountains = [
+      { x: -150, z: -150, height: 55, width: 45 },
+      { x: -90, z: -160, height: 65, width: 50 },
+      { x: -30, z: -155, height: 60, width: 48 },
+      { x: 30, z: -165, height: 70, width: 55 },
+      { x: 90, z: -158, height: 58, width: 46 },
+      { x: 150, z: -152, height: 52, width: 42 },
+    ];
+
+    midMountains.forEach(m => {
+      const mountain = new THREE.Mesh(
+        new THREE.ConeGeometry(m.width, m.height, 5),
+        midMountainMat
+      );
+      mountain.position.set(m.x, m.height / 2, m.z);
+      mountain.rotation.y = Math.random() * Math.PI;
+      this._scene3d.add(mountain);
+
+      // Snow cap
+      const snowCap = new THREE.Mesh(
+        new THREE.ConeGeometry(m.width * 0.35, m.height * 0.2, 5),
+        snowCapMat
+      );
+      snowCap.position.set(m.x, m.height * 0.8, m.z);
+      snowCap.rotation.y = mountain.rotation.y;
+      this._scene3d.add(snowCap);
+    });
+
+    // Near hills (smaller, more detail)
+    const nearHills = [
+      { x: -120, z: -100, height: 25, width: 30 },
+      { x: -70, z: -110, height: 30, width: 35 },
+      { x: 70, z: -105, height: 28, width: 32 },
+      { x: 130, z: -95, height: 22, width: 28 },
+    ];
+
+    nearHills.forEach(m => {
+      const hill = new THREE.Mesh(
+        new THREE.ConeGeometry(m.width, m.height, 5),
+        nearMountainMat
+      );
+      hill.position.set(m.x, m.height / 2, m.z);
+      hill.rotation.y = Math.random() * Math.PI;
+      this._scene3d.add(hill);
+
+      // Light snow dusting
+      const snowDust = new THREE.Mesh(
+        new THREE.ConeGeometry(m.width * 0.3, m.height * 0.15, 5),
+        snowCapMat
+      );
+      snowDust.position.set(m.x, m.height * 0.85, m.z);
+      snowDust.rotation.y = hill.rotation.y;
+      this._scene3d.add(snowDust);
+    });
+
+    // Side mountains (left and right edges)
+    const sideMountains = [
+      { x: -200, z: -80, height: 45, width: 40 },
+      { x: -210, z: -40, height: 35, width: 32 },
+      { x: 200, z: -70, height: 40, width: 38 },
+      { x: 205, z: -30, height: 32, width: 30 },
+    ];
+
+    sideMountains.forEach(m => {
+      const mountain = new THREE.Mesh(
+        new THREE.ConeGeometry(m.width, m.height, 5),
+        midMountainMat
+      );
+      mountain.position.set(m.x, m.height / 2, m.z);
+      this._scene3d.add(mountain);
+    });
   }
 
   _createTrees3D() {
