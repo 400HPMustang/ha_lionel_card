@@ -2,7 +2,7 @@
  * Lionel Train Controller Card
  * A custom Lovelace card for controlling Lionel LionChief trains
  * https://github.com/BlackandBlue1908/ha_lionel_card
- * Version: 2.1.0 - Added visual polish, disabled states, button feedback
+ * Version: 2.2.0 - Added option to disable 3D animation for mobile
  */
 
 // Load Three.js dynamically if not already loaded
@@ -53,9 +53,21 @@ class LionelTrainCard extends HTMLElement {
     this._config = config || {};
     this._deviceName = this._config.device || '';
     this._trainModel = 'Generic'; // Will be updated from sensor
+    this._animationEnabled = this._config.animation !== false; // Default to enabled
     if (this._deviceName) {
       this._render();
     }
+  }
+
+  static getConfigElement() {
+    return document.createElement('lionel-train-card-editor');
+  }
+
+  static getStubConfig() {
+    return {
+      device: '',
+      animation: true
+    };
   }
 
   _updateTrainModel() {
@@ -727,9 +739,11 @@ class LionelTrainCard extends HTMLElement {
           </div>
 
           <!-- 3D Train Animation Display -->
+          ${this._animationEnabled ? `
           <div class="train-animation-3d" id="train-3d-container">
             <div class="train-status-text" id="train-status-text">Stopped</div>
           </div>
+          ` : ''}
           
           <div class="throttle-section">
             <div class="throttle-header">
@@ -1195,6 +1209,9 @@ class LionelTrainCard extends HTMLElement {
   }
 
   _updateTrainAnimation(speed, isForward, lightsOn) {
+    // Skip if animation is disabled
+    if (!this._animationEnabled) return;
+
     // Initialize 3D scene if not already done
     if (!this._scene3d && window.THREE) {
       this._init3DScene();
@@ -2452,6 +2469,7 @@ class LionelTrainCardEditor extends HTMLElement {
     const devices = this._getLionelDevices();
     const currentDevice = this._config.device || '';
     const currentName = this._config.name || '';
+    const animationEnabled = this._config.animation !== false;
     
     const deviceOptions = devices.length > 0 
       ? devices.map(d => `<option value="${d}" ${currentDevice === d ? 'selected' : ''}>${d}</option>`).join('')
@@ -2472,7 +2490,7 @@ class LionelTrainCardEditor extends HTMLElement {
           color: var(--primary-text-color);
         }
         .editor select,
-        .editor input {
+        .editor input[type="text"] {
           width: 100%;
           padding: 10px;
           border: 1px solid var(--divider-color, #ccc);
@@ -2492,6 +2510,20 @@ class LionelTrainCardEditor extends HTMLElement {
           color: var(--secondary-text-color);
           margin-top: 4px;
         }
+        .editor .checkbox-field {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .editor .checkbox-field input[type="checkbox"] {
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+        }
+        .editor .checkbox-field label {
+          margin-bottom: 0;
+          cursor: pointer;
+        }
       </style>
       <div class="editor">
         <div class="field">
@@ -2507,6 +2539,14 @@ class LionelTrainCardEditor extends HTMLElement {
           <label>Card Name (optional)</label>
           <input type="text" id="name" value="${currentName}" placeholder="Leave blank to use device name">
         </div>
+
+        <div class="field">
+          <div class="checkbox-field">
+            <input type="checkbox" id="animation" ${animationEnabled ? 'checked' : ''}>
+            <label for="animation">Enable 3D Animation</label>
+          </div>
+          <div class="hint">Disable to improve performance on mobile devices</div>
+        </div>
       </div>
     `;
 
@@ -2517,6 +2557,11 @@ class LionelTrainCardEditor extends HTMLElement {
 
     this.querySelector('#name').addEventListener('change', (e) => {
       this._config = { ...this._config, name: e.target.value };
+      this._fireEvent();
+    });
+
+    this.querySelector('#animation').addEventListener('change', (e) => {
+      this._config = { ...this._config, animation: e.target.checked };
       this._fireEvent();
     });
   }
