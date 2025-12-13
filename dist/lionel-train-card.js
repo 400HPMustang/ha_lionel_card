@@ -657,27 +657,27 @@ class LionelTrainCard extends HTMLElement {
 
   static getStubConfig() {
     return {
-      device: 'Polar Express',
-      name: 'Lionel Train'
+      device: '',
+      name: ''
     };
   }
 }
 
 // Card Editor
 class LionelTrainCardEditor extends HTMLElement {
+  constructor() {
+    super();
+    this._config = {};
+  }
+
   set hass(hass) {
     this._hass = hass;
-    // Re-render when hass is updated to populate device list
-    if (this._config) {
-      this._render();
-    }
+    this._render();
   }
 
   setConfig(config) {
     this._config = config || {};
-    if (this._hass) {
-      this._render();
-    }
+    this._render();
   }
 
   _getLionelDevices() {
