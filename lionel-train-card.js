@@ -2,8 +2,15 @@
  * Lionel Train Controller Card
  * A custom Lovelace card for controlling Lionel LionChief trains
  * https://github.com/BlackandBlue1908/ha_lionel_card
- * Version: 1.2.0 - Oval track with Polar Express design
+ * Version: 2.0.0 - 3D Train Animation with Three.js
  */
+
+// Load Three.js dynamically if not already loaded
+if (!window.THREE) {
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+  document.head.appendChild(script);
+}
 
 // Train model announcement name mappings
 // Contributors: Add your train model here!
@@ -147,258 +154,35 @@ class LionelTrainCard extends HTMLElement {
           color: white;
         }
 
-        /* Train Animation Section - Oval Track */
-        .train-animation {
-          background: linear-gradient(to bottom, #1a2a1a 0%, #0d1a0d 100%);
+        /* 3D Train Animation Section */
+        .train-animation-3d {
           border-radius: 12px;
-          padding: 16px;
           margin-bottom: 16px;
           position: relative;
-          height: 140px;
+          height: 200px;
           overflow: hidden;
+          background: #111;
         }
 
-        .oval-track {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 85%;
-          height: 70%;
-          transform: translate(-50%, -50%);
-          border: 6px solid #5a5a5a;
-          border-radius: 50%;
-          box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.3);
+        .train-animation-3d canvas {
+          width: 100% !important;
+          height: 100% !important;
+          border-radius: 12px;
         }
-
-        .oval-track::before {
-          content: '';
-          position: absolute;
-          top: -3px;
-          left: -3px;
-          right: -3px;
-          bottom: -3px;
-          border: 3px dashed #4a3a2a;
-          border-radius: 50%;
-          opacity: 0.6;
-        }
-
-        .train-wrapper {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 85%;
-          height: 70%;
-          transform: translate(-50%, -50%);
-          pointer-events: none;
-        }
-
-        .train-pivot {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 0;
-          height: 0;
-          transform-origin: center center;
-        }
-
-        .train {
-          position: absolute;
-          display: flex;
-          align-items: flex-end;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-          transform-origin: center center;
-        }
-
-        /* Generic Locomotive */
-        .locomotive {
-          position: relative;
-          width: 45px;
-          height: 28px;
-          background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
-          border-radius: 4px 12px 2px 2px;
-          border: 1px solid #3a3a3a;
-        }
-
-        .cab {
-          position: absolute;
-          top: -6px;
-          right: 3px;
-          width: 18px;
-          height: 12px;
-          background: linear-gradient(to bottom, #3a3a3a 0%, #2a2a2a 100%);
-          border-radius: 3px 3px 0 0;
-          border: 1px solid #4a4a4a;
-        }
-
-        .smokestack {
-          position: absolute;
-          top: -10px;
-          left: 8px;
-          width: 7px;
-          height: 8px;
-          background: linear-gradient(to bottom, #4a4a4a 0%, #2a2a2a 100%);
-          border-radius: 2px 2px 0 0;
-        }
-
-        .headlight {
-          position: absolute;
-          top: 8px;
-          right: -3px;
-          width: 6px;
-          height: 6px;
-          background: #333;
-          border-radius: 50%;
-          transition: all 0.3s ease;
-          z-index: 5;
-        }
-
-        .headlight.on {
-          background: #ffeb3b;
-          box-shadow: 0 0 10px 3px rgba(255, 235, 59, 0.7), 0 0 20px 6px rgba(255, 235, 59, 0.4);
-        }
-
-        .wheel {
-          position: absolute;
-          bottom: -5px;
-          width: 8px;
-          height: 8px;
-          background: #2a2a2a;
-          border: 1px solid #5a5a5a;
-          border-radius: 50%;
-        }
-
-        .wheel.w1 { left: 5px; }
-        .wheel.w2 { left: 18px; }
-        .wheel.w3 { right: 5px; }
-
-        .smoke {
-          position: absolute;
-          top: -18px;
-          left: 9px;
-          opacity: 0;
-        }
-
-        .smoke.active .smoke-puff {
-          animation: smoke-rise 1.2s ease-out infinite;
-        }
-
-        .smoke-puff {
-          width: 6px;
-          height: 6px;
-          background: rgba(200, 200, 200, 0.7);
-          border-radius: 50%;
-          position: absolute;
-        }
-
-        .smoke-puff:nth-child(1) { animation-delay: 0s; }
-        .smoke-puff:nth-child(2) { animation-delay: 0.25s; left: 4px; }
-        .smoke-puff:nth-child(3) { animation-delay: 0.5s; left: -2px; }
-
-        @keyframes smoke-rise {
-          0% { opacity: 0.8; transform: translateY(0) scale(1); }
-          100% { opacity: 0; transform: translateY(-15px) scale(1.8); }
-        }
-
-        /* Polar Express Special Design */
-        .train.polar-express .locomotive {
-          width: 50px;
-          height: 30px;
-          background: linear-gradient(to bottom, #1a1a1a 0%, #0a0a0a 100%);
-          border-radius: 3px 8px 2px 2px;
-          border: 1px solid #2a2a2a;
-        }
-
-        .train.polar-express .cab {
-          top: -8px;
-          right: 2px;
-          width: 20px;
-          height: 14px;
-          background: linear-gradient(to bottom, #1a1a1a 0%, #0a0a0a 100%);
-        }
-
-        .train.polar-express .smokestack {
-          top: -12px;
-          left: 6px;
-          width: 8px;
-          height: 10px;
-          background: #1a1a1a;
-        }
-
-        .train.polar-express .boiler-band {
-          position: absolute;
-          top: 6px;
-          left: 2px;
-          width: 30px;
-          height: 3px;
-          background: #c9a227;
-          border-radius: 1px;
-        }
-
-        /* Polar Express Passenger Cars */
-        .passenger-car {
-          position: relative;
-          width: 38px;
-          height: 22px;
-          background: linear-gradient(to bottom, #1e4a6e 0%, #15364f 100%);
-          border-radius: 2px;
-          margin-left: 3px;
-          border: 1px solid #2a5a7e;
-        }
-
-        .passenger-car .windows {
-          position: absolute;
-          top: 5px;
-          left: 3px;
-          right: 3px;
-          height: 8px;
-          display: flex;
-          gap: 3px;
-        }
-
-        .passenger-car .window {
-          flex: 1;
-          background: rgba(255, 230, 150, 0.3);
-          border-radius: 1px;
-        }
-
-        .passenger-car .window.lit {
-          background: rgba(255, 230, 150, 0.9);
-          box-shadow: 0 0 4px rgba(255, 230, 150, 0.5);
-        }
-
-        .passenger-car .car-stripe {
-          position: absolute;
-          bottom: 4px;
-          left: 0;
-          right: 0;
-          height: 2px;
-          background: #c9a227;
-        }
-
-        .passenger-car .car-wheel {
-          position: absolute;
-          bottom: -4px;
-          width: 6px;
-          height: 6px;
-          background: #1a1a1a;
-          border: 1px solid #3a3a3a;
-          border-radius: 50%;
-        }
-
-        .passenger-car .car-wheel.cw1 { left: 4px; }
-        .passenger-car .car-wheel.cw2 { right: 4px; }
 
         .train-status-text {
           position: absolute;
-          bottom: 6px;
+          bottom: 8px;
           left: 0;
           right: 0;
           text-align: center;
-          font-size: 0.7em;
-          color: rgba(255,255,255,0.6);
+          font-size: 0.75em;
+          color: rgba(255,255,255,0.7);
           text-transform: uppercase;
           letter-spacing: 1px;
-          text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+          text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+          pointer-events: none;
+          z-index: 10;
         }
         
         /* Throttle Section */
@@ -894,51 +678,8 @@ class LionelTrainCard extends HTMLElement {
             <div class="status disconnected" id="status">Disconnected</div>
           </div>
 
-          <!-- Animated Train Display -->
-          <div class="train-animation">
-            <div class="oval-track"></div>
-            <div class="train-wrapper">
-              <div class="train-pivot" id="train-pivot">
-                <div class="train ${this._trainModel === 'Polar Express' ? 'polar-express' : ''}" id="train">
-                  <div class="locomotive">
-                    <div class="cab"></div>
-                    <div class="smokestack"></div>
-                    ${this._trainModel === 'Polar Express' ? '<div class="boiler-band"></div>' : ''}
-                    <div class="headlight" id="train-headlight"></div>
-                    <div class="smoke" id="train-smoke">
-                      <div class="smoke-puff"></div>
-                      <div class="smoke-puff"></div>
-                      <div class="smoke-puff"></div>
-                    </div>
-                    <div class="wheel w1"></div>
-                    <div class="wheel w2"></div>
-                    <div class="wheel w3"></div>
-                  </div>
-                  ${this._trainModel === 'Polar Express' ? `
-                  <div class="passenger-car">
-                    <div class="windows">
-                      <div class="window lit"></div>
-                      <div class="window lit"></div>
-                      <div class="window lit"></div>
-                    </div>
-                    <div class="car-stripe"></div>
-                    <div class="car-wheel cw1"></div>
-                    <div class="car-wheel cw2"></div>
-                  </div>
-                  <div class="passenger-car">
-                    <div class="windows">
-                      <div class="window lit"></div>
-                      <div class="window lit"></div>
-                      <div class="window lit"></div>
-                    </div>
-                    <div class="car-stripe"></div>
-                    <div class="car-wheel cw1"></div>
-                    <div class="car-wheel cw2"></div>
-                  </div>
-                  ` : ''}
-                </div>
-              </div>
-            </div>
+          <!-- 3D Train Animation Display -->
+          <div class="train-animation-3d" id="train-3d-container">
             <div class="train-status-text" id="train-status-text">Stopped</div>
           </div>
           
@@ -1346,101 +1087,491 @@ class LionelTrainCard extends HTMLElement {
   }
 
   _updateTrainAnimation(speed, isForward, lightsOn) {
-    const trainPivot = this.shadowRoot.getElementById('train-pivot');
-    const train = this.shadowRoot.getElementById('train');
-    const smoke = this.shadowRoot.getElementById('train-smoke');
-    const statusText = this.shadowRoot.getElementById('train-status-text');
-
-    if (!trainPivot || !train || !smoke || !statusText) return;
-
-    // Update smoke animation based on speed
-    if (speed > 0) {
-      smoke.classList.add('active');
-      smoke.style.opacity = Math.min(0.3 + (speed / 100) * 0.7, 1);
-    } else {
-      smoke.classList.remove('active');
-      smoke.style.opacity = 0;
+    // Initialize 3D scene if not already done
+    if (!this._scene3d && window.THREE) {
+      this._init3DScene();
     }
 
-    // Animate train around oval track
-    if (speed > 0) {
-      if (!this._trainAnimationId) {
-        this._trainAngle = this._trainAngle || 0;
-        this._animateTrainOval();
-      }
-      this._trainSpeed = speed;
-      this._trainDirection = isForward;
-    } else {
-      if (this._trainAnimationId) {
-        cancelAnimationFrame(this._trainAnimationId);
-        this._trainAnimationId = null;
-      }
-    }
+    // Update 3D train state
+    this._trainSpeed3d = speed;
+    this._trainDirection3d = isForward;
+    this._trainLights3d = lightsOn;
 
     // Update status text
-    if (speed === 0) {
-      statusText.textContent = 'Stopped';
-    } else if (speed < 30) {
-      statusText.textContent = isForward ? 'Crawling Forward' : 'Crawling Backward';
-    } else if (speed < 60) {
-      statusText.textContent = isForward ? 'Moving Forward' : 'Moving Backward';
-    } else {
-      statusText.textContent = isForward ? 'Full Speed Ahead!' : 'Full Speed Reverse!';
+    const statusText = this.shadowRoot.getElementById('train-status-text');
+    if (statusText) {
+      if (speed === 0) {
+        statusText.textContent = 'Stopped';
+      } else if (speed < 30) {
+        statusText.textContent = isForward ? 'Crawling Forward' : 'Crawling Backward';
+      } else if (speed < 60) {
+        statusText.textContent = isForward ? 'Moving Forward' : 'Moving Backward';
+      } else {
+        statusText.textContent = isForward ? 'Full Speed Ahead!' : 'Full Speed Reverse!';
+      }
+    }
+
+    // Update headlight
+    if (this._headlightBulb && this._spotlight) {
+      if (lightsOn) {
+        this._headlightBulb.material.color.setHex(0xffffee);
+        this._spotlight.intensity = 20;
+      } else {
+        this._headlightBulb.material.color.setHex(0x333333);
+        this._spotlight.intensity = 0;
+      }
     }
   }
 
-  _animateTrainOval() {
-    const trainPivot = this.shadowRoot.getElementById('train-pivot');
-    const train = this.shadowRoot.getElementById('train');
-    const wrapper = this.shadowRoot.querySelector('.train-wrapper');
+  _init3DScene() {
+    const container = this.shadowRoot.getElementById('train-3d-container');
+    if (!container || !window.THREE) return;
+
+    const THREE = window.THREE;
+    const width = container.clientWidth || 300;
+    const height = container.clientHeight || 200;
+
+    // Scene
+    this._scene3d = new THREE.Scene();
+    this._scene3d.background = new THREE.Color(0x87CEEB);
+    this._scene3d.fog = new THREE.Fog(0xaaccff, 80, 300);
+
+    // Camera
+    this._camera3d = new THREE.PerspectiveCamera(45, width / height, 1, 500);
+    this._camera3d.position.set(80, 60, 80);
+    this._camera3d.lookAt(0, 0, 0);
+
+    // Renderer
+    this._renderer3d = new THREE.WebGLRenderer({ antialias: true });
+    this._renderer3d.setSize(width, height);
+    this._renderer3d.shadowMap.enabled = true;
+    container.insertBefore(this._renderer3d.domElement, container.firstChild);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xaaccff, 0.6);
+    this._scene3d.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffee, 0.8);
+    dirLight.position.set(50, 100, 30);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    this._scene3d.add(dirLight);
+
+    // Ground (snow)
+    const groundGeo = new THREE.PlaneGeometry(500, 500);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    this._scene3d.add(ground);
+
+    // Create track and train
+    this._createTrack3D();
+    this._createTrain3D();
+    this._createTrees3D();
+    this._createSnow3D();
+
+    // Initialize animation state
+    this._trainProgress = 0;
+    this._trainSpeed3d = 0;
+    this._trainDirection3d = true;
+    this._trainLights3d = false;
+    this._particles3d = [];
+
+    // Start animation loop
+    this._animate3D();
+
+    // Handle resize
+    const resizeObserver = new ResizeObserver(() => {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w > 0 && h > 0) {
+        this._camera3d.aspect = w / h;
+        this._camera3d.updateProjectionMatrix();
+        this._renderer3d.setSize(w, h);
+      }
+    });
+    resizeObserver.observe(container);
+  }
+
+  _createTrack3D() {
+    const THREE = window.THREE;
+    const trackRadius = 35;
+    const trackLength = 50;
+
+    // Stadium curve path
+    class StadiumCurve extends THREE.Curve {
+      constructor(radius, length) {
+        super();
+        this.radius = radius;
+        this.length = length;
+        this.arcLength = Math.PI * radius;
+        this.straightLength = length;
+        this.totalLength = (2 * this.arcLength) + (2 * this.straightLength);
+      }
+      getPoint(t, optionalTarget = new THREE.Vector3()) {
+        let d = t * this.totalLength;
+        if (d < this.arcLength) {
+          const angle = -Math.PI/2 + (Math.PI * (d / this.arcLength));
+          return optionalTarget.set(this.length/2 + this.radius * Math.cos(angle), 0.3, this.radius * Math.sin(angle));
+        }
+        d -= this.arcLength;
+        if (d < this.straightLength) {
+          return optionalTarget.set((this.length/2) - d, 0.3, this.radius);
+        }
+        d -= this.straightLength;
+        if (d < this.arcLength) {
+          const angle = Math.PI/2 + (Math.PI * (d / this.arcLength));
+          return optionalTarget.set(-this.length/2 + this.radius * Math.cos(angle), 0.3, this.radius * Math.sin(angle));
+        }
+        d -= this.arcLength;
+        return optionalTarget.set((-this.length/2) + d, 0.3, -this.radius);
+      }
+    }
+
+    this._trainPath = new StadiumCurve(trackRadius, trackLength);
+
+    // Ballast
+    const ballastGeo = new THREE.TubeGeometry(this._trainPath, 200, 4, 8, true);
+    const ballastMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 1 });
+    const ballast = new THREE.Mesh(ballastGeo, ballastMat);
+    ballast.scale.y = 0.15;
+    this._scene3d.add(ballast);
+
+    // Rails
+    const railOffset = 1.8;
+    const railPointsL = [], railPointsR = [];
+    for (let i = 0; i <= 300; i++) {
+      const t = i / 300;
+      const pt = this._trainPath.getPointAt(t);
+      const tangent = this._trainPath.getTangentAt(t);
+      const normal = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
+      railPointsL.push(pt.clone().add(normal.clone().multiplyScalar(railOffset)));
+      railPointsR.push(pt.clone().add(normal.clone().multiplyScalar(-railOffset)));
+    }
+    const railCurveL = new THREE.CatmullRomCurve3(railPointsL, true);
+    const railCurveR = new THREE.CatmullRomCurve3(railPointsR, true);
+    const railMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.7, roughness: 0.2 });
+    const railMeshL = new THREE.Mesh(new THREE.TubeGeometry(railCurveL, 200, 0.25, 6, true), railMat);
+    const railMeshR = new THREE.Mesh(new THREE.TubeGeometry(railCurveR, 200, 0.25, 6, true), railMat);
+    railMeshL.position.y = 0.4;
+    railMeshR.position.y = 0.4;
+    this._scene3d.add(railMeshL);
+    this._scene3d.add(railMeshR);
+  }
+
+  _createTrain3D() {
+    const THREE = window.THREE;
+    this._trainCars = [];
+
+    // Locomotive
+    const locoGroup = new THREE.Group();
+    const boilerMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.3 });
+
+    // Boiler
+    const boiler = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 10, 24), boilerMat);
+    boiler.rotation.x = Math.PI / 2;
+    boiler.position.set(0, 3, 1);
+    boiler.castShadow = true;
+    locoGroup.add(boiler);
+
+    // Cab
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(4.2, 5, 3.5), boilerMat);
+    cab.position.set(0, 4, -5);
+    cab.castShadow = true;
+    locoGroup.add(cab);
+
+    // Smokestack
+    const stack = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.5, 1.8, 12), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+    stack.position.set(0, 5, 5);
+    locoGroup.add(stack);
+
+    // Cowcatcher
+    const cow = new THREE.Mesh(new THREE.ConeGeometry(1.8, 2, 4), boilerMat);
+    cow.rotation.x = -Math.PI / 2;
+    cow.rotation.z = Math.PI / 4;
+    cow.position.set(0, 1, 7);
+    locoGroup.add(cow);
+
+    // Headlight
+    const lightHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1, 12), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+    lightHousing.rotation.x = Math.PI / 2;
+    lightHousing.position.set(0, 5, 6.5);
+    locoGroup.add(lightHousing);
+
+    this._headlightBulb = new THREE.Mesh(new THREE.CircleGeometry(0.5, 12), new THREE.MeshBasicMaterial({ color: 0x333333 }));
+    this._headlightBulb.position.set(0, 5, 7.1);
+    locoGroup.add(this._headlightBulb);
+
+    this._spotlight = new THREE.SpotLight(0xffaa00, 0, 80, Math.PI / 6, 0.5, 1);
+    this._spotlight.position.set(0, 5, 7);
+    const target = new THREE.Object3D();
+    target.position.set(0, 3, 20);
+    locoGroup.add(target);
+    this._spotlight.target = target;
+    locoGroup.add(this._spotlight);
+
+    // Wheels
+    const wheelGeo = new THREE.CylinderGeometry(1.4, 1.4, 0.4, 24);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    for (let z = -2; z <= 4; z += 2.5) {
+      const wL = new THREE.Mesh(wheelGeo, wheelMat);
+      wL.rotation.z = Math.PI / 2;
+      wL.position.set(-2, 1.4, z);
+      locoGroup.add(wL);
+      const wR = new THREE.Mesh(wheelGeo, wheelMat);
+      wR.rotation.z = Math.PI / 2;
+      wR.position.set(2, 1.4, z);
+      locoGroup.add(wR);
+    }
+
+    locoGroup.userData = { isEngine: true };
+    this._scene3d.add(locoGroup);
+    this._trainCars.push({ mesh: locoGroup, offset: 0 });
+
+    // Tender
+    const tenderGroup = new THREE.Group();
+    const tenderBody = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.5, 8), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 }));
+    tenderBody.position.y = 3;
+    tenderBody.castShadow = true;
+    tenderGroup.add(tenderBody);
+    this._addBogie3D(tenderGroup, -2.5);
+    this._addBogie3D(tenderGroup, 2.5);
+    this._scene3d.add(tenderGroup);
+    this._trainCars.push({ mesh: tenderGroup, offset: 0.06 });
+
+    // Passenger cars (for Polar Express)
+    const isPolarExpress = this._trainModel === 'Polar Express';
+    const numCars = isPolarExpress ? 3 : 1;
     
-    if (!trainPivot || !train || !wrapper) return;
+    for (let i = 0; i < numCars; i++) {
+      const carGroup = new THREE.Group();
+      const carColor = isPolarExpress ? 0x2b4c7e : 0x8B4513;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(3.8, 4, 11), new THREE.MeshStandardMaterial({ color: carColor, roughness: 0.3 }));
+      body.position.y = 3.4;
+      body.castShadow = true;
+      carGroup.add(body);
+
+      // Roof
+      const roof = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 11.2, 12, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: 0x506070 }));
+      roof.rotation.z = Math.PI / 2;
+      roof.rotation.y = Math.PI / 2;
+      roof.position.y = 5.4;
+      roof.scale.set(1.2, 1, 1.5);
+      carGroup.add(roof);
+
+      // Windows
+      if (isPolarExpress) {
+        const winMat = new THREE.MeshBasicMaterial({ color: 0xffffdd });
+        for (let s = -1; s <= 1; s += 2) {
+          for (let w = -4; w <= 4; w += 1.8) {
+            const win = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.9), winMat);
+            win.rotation.y = s * Math.PI / 2;
+            win.position.set(s * 1.95, 4.2, w);
+            carGroup.add(win);
+          }
+        }
+        // Gold stripe
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(3.85, 0.3, 11.1), new THREE.MeshStandardMaterial({ color: 0xFFD700 }));
+        stripe.position.y = 2.5;
+        carGroup.add(stripe);
+      }
+
+      this._addBogie3D(carGroup, -3.5);
+      this._addBogie3D(carGroup, 3.5);
+      this._scene3d.add(carGroup);
+      this._trainCars.push({ mesh: carGroup, offset: 0.12 + (i * 0.045) });
+    }
+  }
+
+  _addBogie3D(parent, zPos) {
+    const THREE = window.THREE;
+    const bogieGroup = new THREE.Group();
+    bogieGroup.position.set(0, 0.8, zPos);
+    bogieGroup.add(new THREE.Mesh(new THREE.BoxGeometry(2, 0.4, 2.5), new THREE.MeshStandardMaterial({ color: 0x111111 })));
+    const wGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.25, 16);
+    const wMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    [{ x: 1.2, z: -0.8 }, { x: -1.2, z: -0.8 }, { x: 1.2, z: 0.8 }, { x: -1.2, z: 0.8 }].forEach(pos => {
+      const w = new THREE.Mesh(wGeo, wMat);
+      w.rotation.z = Math.PI / 2;
+      w.position.set(pos.x, 0, pos.z);
+      bogieGroup.add(w);
+    });
+    parent.add(bogieGroup);
+  }
+
+  _createTrees3D() {
+    const THREE = window.THREE;
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2817 });
+    const leavesMat = new THREE.MeshStandardMaterial({ color: 0x1e3612 });
+    const snowMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+    // Central Christmas tree
+    const centerTree = new THREE.Group();
+    for (let i = 0; i < 4; i++) {
+      const s = 1.0 - (i * 0.2);
+      const y = i * 5;
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(8 * s, 8, 10), leavesMat);
+      cone.position.y = y + 4;
+      cone.castShadow = true;
+      centerTree.add(cone);
+      const snow = new THREE.Mesh(new THREE.ConeGeometry(7 * s, 1.5, 10), snowMat);
+      snow.position.y = y + 3;
+      centerTree.add(snow);
+    }
+    const star = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), new THREE.MeshStandardMaterial({ color: 0xFFD700, emissive: 0xFFD700, emissiveIntensity: 0.5 }));
+    star.position.y = 22;
+    centerTree.add(star);
+    this._scene3d.add(centerTree);
+
+    // Surrounding trees
+    for (let i = 0; i < 20; i++) {
+      const angle = (i / 20) * Math.PI * 2;
+      const dist = 60 + Math.random() * 40;
+      const x = Math.cos(angle) * dist;
+      const z = Math.sin(angle) * dist;
+
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.8, 3), trunkMat);
+      trunk.position.y = 1.5;
+      tree.add(trunk);
+      const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 7, 8), leavesMat);
+      leaves.position.y = 5;
+      tree.add(leaves);
+      const treeSnow = new THREE.Mesh(new THREE.ConeGeometry(3.2, 1.5, 8), snowMat);
+      treeSnow.position.y = 7.5;
+      tree.add(treeSnow);
+
+      tree.position.set(x, 0, z);
+      const s = 0.6 + Math.random() * 0.5;
+      tree.scale.set(s, s, s);
+      this._scene3d.add(tree);
+    }
+  }
+
+  _createSnow3D() {
+    const THREE = window.THREE;
+    const particleCount = 2000;
+    const geometry = new THREE.BufferGeometry();
+    const positions = [];
+    const velocities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      positions.push(Math.random() * 300 - 150, Math.random() * 200, Math.random() * 300 - 150);
+      velocities.push((Math.random() - 0.5) * 0.3, Math.random() * -0.8 - 0.3, (Math.random() - 0.5) * 0.3);
+    }
+
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.userData.velocities = velocities;
+    const material = new THREE.PointsMaterial({ color: 0xffffff, size: 1, transparent: true, opacity: 0.8 });
+    this._snowSystem = new THREE.Points(geometry, material);
+    this._scene3d.add(this._snowSystem);
+  }
+
+  _animate3D() {
+    if (!this._scene3d || !this._renderer3d) return;
 
     const animate = () => {
-      if (!this._trainSpeed || this._trainSpeed === 0) {
-        this._trainAnimationId = null;
-        return;
+      this._animationId3d = requestAnimationFrame(animate);
+
+      // Update train position
+      if (this._trainSpeed3d > 0) {
+        const speedFactor = (this._trainSpeed3d / 100) * 0.002;
+        if (this._trainDirection3d) {
+          this._trainProgress += speedFactor;
+        } else {
+          this._trainProgress -= speedFactor;
+        }
+        if (this._trainProgress > 1) this._trainProgress -= 1;
+        if (this._trainProgress < 0) this._trainProgress += 1;
       }
 
-      // Calculate rotation speed based on train speed (0.3 to 2 degrees per frame)
-      const rotateAmount = 0.3 + (this._trainSpeed / 100) * 1.7;
-      
-      if (this._trainDirection) {
-        this._trainAngle += rotateAmount;
-      } else {
-        this._trainAngle -= rotateAmount;
-      }
-      
-      if (this._trainAngle >= 360) this._trainAngle -= 360;
-      if (this._trainAngle < 0) this._trainAngle += 360;
+      // Position train cars
+      this._trainCars.forEach(car => {
+        let carProg = this._trainProgress - car.offset;
+        if (carProg < 0) carProg += 1;
+        if (carProg > 1) carProg -= 1;
+        const position = this._trainPath.getPointAt(carProg);
+        car.mesh.position.copy(position);
+        let lookProg = carProg + 0.001;
+        if (lookProg > 1) lookProg -= 1;
+        const lookAtPos = this._trainPath.getPointAt(lookProg);
+        car.mesh.lookAt(lookAtPos);
+      });
 
-      // Get wrapper dimensions for ellipse calculation
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const radiusX = wrapperRect.width / 2 - 30;
-      const radiusY = wrapperRect.height / 2 - 15;
-
-      // Calculate position on ellipse
-      const angleRad = (this._trainAngle * Math.PI) / 180;
-      const x = Math.cos(angleRad) * radiusX;
-      const y = Math.sin(angleRad) * radiusY;
-
-      // Calculate tangent angle for train rotation (perpendicular to radius)
-      // For an ellipse, the tangent angle is different from the position angle
-      const tangentAngle = Math.atan2(radiusX * Math.sin(angleRad), -radiusY * Math.cos(angleRad));
-      let trainRotation = (tangentAngle * 180) / Math.PI + 90;
-      
-      // Flip train when going backwards (reverse direction)
-      if (!this._trainDirection) {
-        trainRotation += 180;
+      // Update smoke
+      if (this._trainSpeed3d > 0) {
+        this._updateSmoke3D();
       }
 
-      trainPivot.style.transform = `translate(${x}px, ${y}px)`;
-      train.style.transform = `rotate(${trainRotation}deg)`;
+      // Update snow
+      this._updateSnow3D();
 
-      this._trainAnimationId = requestAnimationFrame(animate);
+      // Rotate camera slowly
+      const time = Date.now() * 0.0001;
+      this._camera3d.position.x = Math.cos(time) * 100;
+      this._camera3d.position.z = Math.sin(time) * 100;
+      this._camera3d.lookAt(0, 0, 0);
+
+      this._renderer3d.render(this._scene3d, this._camera3d);
     };
 
-    this._trainAnimationId = requestAnimationFrame(animate);
+    animate();
+  }
+
+  _updateSmoke3D() {
+    const THREE = window.THREE;
+    if (!this._trainCars || this._trainCars.length === 0) return;
+
+    const engine = this._trainCars[0].mesh;
+    const chance = 0.7 - (this._trainSpeed3d / 100) * 0.5;
+    
+    if (Math.random() > chance) {
+      const stackOffset = new THREE.Vector3(0, 5, 5);
+      stackOffset.applyMatrix4(engine.matrixWorld);
+      
+      const particle = {
+        mesh: new THREE.Mesh(
+          new THREE.SphereGeometry(0.5 + Math.random() * 0.3, 6, 6),
+          new THREE.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.4 })
+        ),
+        life: 1.0,
+        velocity: new THREE.Vector3(0, 0.2, 0)
+      };
+      particle.mesh.position.copy(stackOffset);
+      this._scene3d.add(particle.mesh);
+      this._particles3d.push(particle);
+    }
+
+    for (let i = this._particles3d.length - 1; i >= 0; i--) {
+      const p = this._particles3d[i];
+      p.life -= 0.02;
+      p.mesh.position.add(p.velocity);
+      p.mesh.scale.multiplyScalar(1.02);
+      p.mesh.material.opacity = p.life * 0.4;
+      if (p.life <= 0) {
+        this._scene3d.remove(p.mesh);
+        this._particles3d.splice(i, 1);
+      }
+    }
+  }
+
+  _updateSnow3D() {
+    if (!this._snowSystem) return;
+    const positions = this._snowSystem.geometry.attributes.position.array;
+    const velocities = this._snowSystem.geometry.userData.velocities;
+    for (let i = 0; i < positions.length; i += 3) {
+      positions[i] += velocities[i];
+      positions[i + 1] += velocities[i + 1];
+      positions[i + 2] += velocities[i + 2];
+      if (positions[i + 1] < 0) {
+        positions[i] = Math.random() * 300 - 150;
+        positions[i + 1] = 200;
+        positions[i + 2] = Math.random() * 300 - 150;
+      }
+    }
+    this._snowSystem.geometry.attributes.position.needsUpdate = true;
   }
 
   getCardSize() {
