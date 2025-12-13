@@ -610,7 +610,7 @@ class LionelTrainCard extends HTMLElement {
   }
 
   _updateCard() {
-    if (!this._hass || !this._config) return;
+    if (!this._hass || !this._config || !this._deviceName) return;
 
     // Update connection status
     const connectionEntity = this._getEntityId('binary_sensor', 'connected');
