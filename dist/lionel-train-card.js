@@ -116,29 +116,29 @@ class LionelTrainCard extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 20px;
-          padding-bottom: 16px;
+          margin-bottom: 12px;
+          padding-bottom: 10px;
           border-bottom: 1px solid var(--surface-color);
         }
         
         .title {
-          font-size: 1.3em;
+          font-size: 1.1em;
           font-weight: 600;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
         }
         
         .title svg {
-          width: 28px;
-          height: 28px;
+          width: 22px;
+          height: 22px;
           color: var(--accent-color);
         }
         
         .status {
-          font-size: 0.8em;
-          padding: 6px 14px;
-          border-radius: 20px;
+          font-size: 0.7em;
+          padding: 4px 10px;
+          border-radius: 16px;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -188,38 +188,38 @@ class LionelTrainCard extends HTMLElement {
         /* Throttle Section */
         .throttle-section {
           background: var(--surface-color);
-          border-radius: 12px;
-          padding: 16px;
-          margin-bottom: 16px;
+          border-radius: 10px;
+          padding: 10px 14px;
+          margin-bottom: 12px;
         }
         
         .throttle-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 12px;
+          margin-bottom: 6px;
         }
         
         .throttle-label {
-          font-size: 0.9em;
+          font-size: 0.75em;
           color: var(--text-secondary);
           text-transform: uppercase;
           letter-spacing: 1px;
         }
         
         .speed-value {
-          font-size: 2.5em;
+          font-size: 1.4em;
           font-weight: 700;
           color: var(--primary-color);
         }
         
         .throttle-slider {
           width: 100%;
-          height: 12px;
+          height: 8px;
           -webkit-appearance: none;
           appearance: none;
           background: linear-gradient(to right, var(--success-color) 0%, var(--warning-color) 50%, var(--danger-color) 100%);
-          border-radius: 6px;
+          border-radius: 4px;
           outline: none;
           cursor: pointer;
         }
@@ -227,13 +227,13 @@ class LionelTrainCard extends HTMLElement {
         .throttle-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 28px;
-          height: 28px;
+          width: 20px;
+          height: 20px;
           background: white;
-          border: 3px solid var(--primary-color);
+          border: 2px solid var(--primary-color);
           border-radius: 50%;
           cursor: grab;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           transition: transform 0.1s;
         }
         
@@ -242,13 +242,13 @@ class LionelTrainCard extends HTMLElement {
         }
         
         .throttle-slider::-moz-range-thumb {
-          width: 28px;
-          height: 28px;
+          width: 20px;
+          height: 20px;
           background: white;
-          border: 3px solid var(--primary-color);
+          border: 2px solid var(--primary-color);
           border-radius: 50%;
           cursor: grab;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         
         /* Direction Buttons */
@@ -1136,10 +1136,10 @@ class LionelTrainCard extends HTMLElement {
     this._scene3d.background = new THREE.Color(0x87CEEB);
     this._scene3d.fog = new THREE.Fog(0xaaccff, 80, 300);
 
-    // Camera
-    this._camera3d = new THREE.PerspectiveCamera(45, width / height, 1, 500);
-    this._camera3d.position.set(80, 60, 80);
-    this._camera3d.lookAt(0, 0, 0);
+    // Camera - better angle for viewing the scene
+    this._camera3d = new THREE.PerspectiveCamera(50, width / height, 1, 500);
+    this._camera3d.position.set(65, 45, 65);
+    this._camera3d.lookAt(0, 5, 0);
 
     // Renderer
     this._renderer3d = new THREE.WebGLRenderer({ antialias: true });
@@ -1170,6 +1170,7 @@ class LionelTrainCard extends HTMLElement {
     this._createTrack3D();
     this._createTrain3D();
     this._createTrees3D();
+    this._createStation3D();
     this._createSnow3D();
 
     // Initialize animation state
@@ -1450,6 +1451,161 @@ class LionelTrainCard extends HTMLElement {
     }
   }
 
+  _createStation3D() {
+    const THREE = window.THREE;
+    const stationGroup = new THREE.Group();
+
+    // Station building - rustic wooden style
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.8 });
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x2d1810, roughness: 0.7 });
+    const windowMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+
+    // Main building
+    const building = new THREE.Mesh(new THREE.BoxGeometry(18, 10, 12), wallMat);
+    building.position.y = 5;
+    building.castShadow = true;
+    stationGroup.add(building);
+
+    // Roof
+    const roofGeo = new THREE.ConeGeometry(14, 6, 4);
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.y = 13;
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    stationGroup.add(roof);
+
+    // Snow on roof
+    const snowRoof = new THREE.Mesh(new THREE.ConeGeometry(14.5, 1.5, 4), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+    snowRoof.position.y = 11;
+    snowRoof.rotation.y = Math.PI / 4;
+    stationGroup.add(snowRoof);
+
+    // Windows (lit)
+    for (let x = -5; x <= 5; x += 5) {
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), windowMat);
+      win.position.set(x, 5, 6.1);
+      stationGroup.add(win);
+      const winBack = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), windowMat);
+      winBack.position.set(x, 5, -6.1);
+      winBack.rotation.y = Math.PI;
+      stationGroup.add(winBack);
+    }
+
+    // Platform
+    const platform = new THREE.Mesh(new THREE.BoxGeometry(30, 1, 8), new THREE.MeshStandardMaterial({ color: 0x666666 }));
+    platform.position.set(0, 0.5, 10);
+    platform.receiveShadow = true;
+    stationGroup.add(platform);
+
+    // Platform edge (yellow safety line)
+    const safetyLine = new THREE.Mesh(new THREE.BoxGeometry(30, 0.1, 0.5), new THREE.MeshStandardMaterial({ color: 0xFFD700 }));
+    safetyLine.position.set(0, 1.05, 13.5);
+    stationGroup.add(safetyLine);
+
+    // Lamp posts
+    const lampMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0xffffcc });
+    for (let x = -12; x <= 12; x += 12) {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 8, 8), lampMat);
+      pole.position.set(x, 4, 12);
+      stationGroup.add(pole);
+      const lampHead = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), lampMat);
+      lampHead.position.set(x, 8.5, 12);
+      stationGroup.add(lampHead);
+      const glow = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), glowMat);
+      glow.position.set(x, 7.5, 12);
+      stationGroup.add(glow);
+      // Add point light
+      const light = new THREE.PointLight(0xffffaa, 0.5, 15);
+      light.position.set(x, 7.5, 12);
+      stationGroup.add(light);
+    }
+
+    // Station sign
+    const signMat = new THREE.MeshStandardMaterial({ color: 0x2d4a2d });
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(8, 2, 0.3), signMat);
+    sign.position.set(0, 11, 6.2);
+    stationGroup.add(sign);
+
+    // Position station outside the track
+    stationGroup.position.set(0, 0, -55);
+    this._scene3d.add(stationGroup);
+
+    // Add some benches on platform
+    const benchMat = new THREE.MeshStandardMaterial({ color: 0x3d2817 });
+    for (let x = -8; x <= 8; x += 8) {
+      const benchSeat = new THREE.Mesh(new THREE.BoxGeometry(4, 0.3, 1.2), benchMat);
+      benchSeat.position.set(x, 1.8, -45);
+      this._scene3d.add(benchSeat);
+      const benchBack = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 0.2), benchMat);
+      benchBack.position.set(x, 2.5, -45.5);
+      this._scene3d.add(benchBack);
+      // Bench legs
+      for (let lx = -1.5; lx <= 1.5; lx += 3) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.2), benchMat);
+        leg.position.set(x + lx, 1, -45);
+        this._scene3d.add(leg);
+      }
+    }
+
+    // Add a few snowmen near the station
+    this._createSnowman(-25, -50);
+    this._createSnowman(28, -48);
+  }
+
+  _createSnowman(x, z) {
+    const THREE = window.THREE;
+    const snowMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+    const snowman = new THREE.Group();
+
+    // Body spheres
+    const bottom = new THREE.Mesh(new THREE.SphereGeometry(2.5, 16, 16), snowMat);
+    bottom.position.y = 2.5;
+    snowman.add(bottom);
+
+    const middle = new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 16), snowMat);
+    middle.position.y = 6;
+    snowman.add(middle);
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), snowMat);
+    head.position.y = 8.5;
+    snowman.add(head);
+
+    // Carrot nose
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1, 8), new THREE.MeshStandardMaterial({ color: 0xff6600 }));
+    nose.rotation.x = Math.PI / 2;
+    nose.position.set(0, 8.5, 1.3);
+    snowman.add(nose);
+
+    // Coal eyes
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+    const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), eyeMat);
+    eyeL.position.set(-0.4, 8.8, 1);
+    snowman.add(eyeL);
+    const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), eyeMat);
+    eyeR.position.set(0.4, 8.8, 1);
+    snowman.add(eyeR);
+
+    // Top hat
+    const hatMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.2, 16), hatMat);
+    hatBrim.position.y = 9.5;
+    snowman.add(hatBrim);
+    const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1.5, 16), hatMat);
+    hatTop.position.y = 10.3;
+    snowman.add(hatTop);
+
+    // Buttons
+    for (let y = 4.5; y <= 6.5; y += 0.8) {
+      const button = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), eyeMat);
+      button.position.set(0, y, 1.7);
+      snowman.add(button);
+    }
+
+    snowman.position.set(x, 0, z);
+    this._scene3d.add(snowman);
+  }
+
   _createSnow3D() {
     const THREE = window.THREE;
     const particleCount = 2000;
@@ -1508,12 +1664,7 @@ class LionelTrainCard extends HTMLElement {
       // Update snow
       this._updateSnow3D();
 
-      // Rotate camera slowly
-      const time = Date.now() * 0.0001;
-      this._camera3d.position.x = Math.cos(time) * 100;
-      this._camera3d.position.z = Math.sin(time) * 100;
-      this._camera3d.lookAt(0, 0, 0);
-
+      // Fixed camera position - no rotation
       this._renderer3d.render(this._scene3d, this._camera3d);
     };
 
