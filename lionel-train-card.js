@@ -1041,18 +1041,20 @@ class LionelTrainCard extends HTMLElement {
       }
     }
 
-    // Get direction state from sensor (more accurate than switch)
+    // Get direction state from sensor or status attributes
+    let isForward = true;
+    
+    // Try direction sensor first
     const directionSensorEntity = this._getEntityId('sensor', 'direction');
     const directionSensorState = this._hass.states[directionSensorEntity];
-    let isForward = true;
-    if (directionSensorState) {
+    if (directionSensorState && directionSensorState.state) {
       isForward = directionSensorState.state === 'forward';
     } else {
-      // Fallback to switch if sensor not available
-      const directionEntity = this._getEntityId('switch', 'direction');
-      const directionState = this._hass.states[directionEntity];
-      if (directionState) {
-        isForward = directionState.state === 'on';
+      // Fallback to status sensor attributes
+      const statusEntity = this._getEntityId('sensor', 'status');
+      const statusState = this._hass.states[statusEntity];
+      if (statusState && statusState.attributes && statusState.attributes.direction_forward !== undefined) {
+        isForward = statusState.attributes.direction_forward;
       }
     }
 
