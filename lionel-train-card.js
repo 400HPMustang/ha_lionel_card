@@ -891,9 +891,15 @@ class LionelTrainCard extends HTMLElement {
       this.shadowRoot.getElementById('speed-display').textContent = '0%';
     });
 
-    // Direction buttons
-    btnForward.addEventListener('click', () => this._pressButton('forward'));
-    btnReverse.addEventListener('click', () => this._pressButton('reverse'));
+    // Direction buttons - immediately update animation state
+    btnForward.addEventListener('click', () => {
+      this._pressButton('forward');
+      this._trainDirection3d = true;
+    });
+    btnReverse.addEventListener('click', () => {
+      this._pressButton('reverse');
+      this._trainDirection3d = false;
+    });
 
     // Control buttons
     btnLights.addEventListener('click', () => this._toggleSwitch('lights'));
@@ -2204,7 +2210,7 @@ class LionelTrainCard extends HTMLElement {
         if (this._trainProgress < 0) this._trainProgress += 1;
       }
 
-      // Position train cars
+      // Position train cars - always face forward on track, only movement direction changes
       this._trainCars.forEach(car => {
         let carProg = this._trainProgress - car.offset;
         if (carProg < 0) carProg += 1;
@@ -2212,16 +2218,11 @@ class LionelTrainCard extends HTMLElement {
         const position = this._trainPath.getPointAt(carProg);
         car.mesh.position.copy(position);
         
-        // Always look ahead on track, then rotate 180 if in reverse
+        // Always look ahead on track (train orientation stays the same)
         let lookProg = carProg + 0.002;
         if (lookProg > 1) lookProg -= 1;
         const lookAtPos = this._trainPath.getPointAt(lookProg);
         car.mesh.lookAt(lookAtPos);
-        
-        // Rotate 180 degrees when going in reverse
-        if (!this._trainDirection3d) {
-          car.mesh.rotateY(Math.PI);
-        }
       });
 
       // Update smoke
