@@ -4,6 +4,31 @@
  * https://github.com/BlackandBlue1908/ha_lionel_card
  */
 
+// Train model announcement name mappings
+// Contributors: Add your train model here!
+const TRAIN_MODELS = {
+  "Generic": {
+    random: "Random",
+    ready_to_roll: "Ready to Roll",
+    hey_there: "Hey There",
+    squeaky: "Squeaky",
+    water_and_fire: "Water & Fire",
+    fastest_freight: "Fastest Freight",
+    penna_flyer: "Penna Flyer",
+  },
+  "Polar Express": {
+    random: "Random",
+    ready_to_roll: "Polar Express",
+    hey_there: "All Aboard",
+    squeaky: "You Coming?",
+    water_and_fire: "Tickets",
+    fastest_freight: "First Gift",
+    penna_flyer: "The King",
+  },
+};
+
+const TRAIN_MODEL_OPTIONS = Object.keys(TRAIN_MODELS);
+
 class LionelTrainCard extends HTMLElement {
   constructor() {
     super();
@@ -18,9 +43,15 @@ class LionelTrainCard extends HTMLElement {
   setConfig(config) {
     this._config = config || {};
     this._deviceName = this._config.device || '';
+    this._trainModel = this._config.train_model || 'Generic';
     if (this._deviceName) {
       this._render();
     }
+  }
+
+  _getAnnouncementName(key) {
+    const model = TRAIN_MODELS[this._trainModel] || TRAIN_MODELS['Generic'];
+    return model[key] || key;
   }
 
   _getEntityId(domain, suffix) {
@@ -585,43 +616,43 @@ class LionelTrainCard extends HTMLElement {
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M14.5,2.5C14.5,2.5 16.5,2.5 16.5,4.5C16.5,6.5 14.5,6.5 14.5,6.5M18,2.5C18,2.5 21,2.5 21,6C21,9.5 18,9.5 18,9.5M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7Z"/>
               </svg>
-              <span>Random</span>
+              <span>${this._getAnnouncementName('random')}</span>
             </button>
             <button class="voice-btn" id="btn-announce-ready">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
               </svg>
-              <span>Ready to Roll</span>
+              <span>${this._getAnnouncementName('ready_to_roll')}</span>
             </button>
             <button class="voice-btn" id="btn-announce-hey">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
               </svg>
-              <span>Hey There</span>
+              <span>${this._getAnnouncementName('hey_there')}</span>
             </button>
             <button class="voice-btn" id="btn-announce-squeaky">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
               </svg>
-              <span>Squeaky</span>
+              <span>${this._getAnnouncementName('squeaky')}</span>
             </button>
             <button class="voice-btn" id="btn-announce-water">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
               </svg>
-              <span>Water & Fire</span>
+              <span>${this._getAnnouncementName('water_and_fire')}</span>
             </button>
             <button class="voice-btn" id="btn-announce-freight">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
               </svg>
-              <span>Fastest Freight</span>
+              <span>${this._getAnnouncementName('fastest_freight')}</span>
             </button>
             <button class="voice-btn" id="btn-announce-penna">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
               </svg>
-              <span>Penna Flyer</span>
+              <span>${this._getAnnouncementName('penna_flyer')}</span>
             </button>
           </div>
           
@@ -950,10 +981,15 @@ class LionelTrainCardEditor extends HTMLElement {
     const devices = this._getLionelDevices();
     const currentDevice = this._config.device || '';
     const currentName = this._config.name || '';
+    const currentModel = this._config.train_model || 'Generic';
     
     const deviceOptions = devices.length > 0 
       ? devices.map(d => `<option value="${d}" ${currentDevice === d ? 'selected' : ''}>${d}</option>`).join('')
       : '<option value="">No Lionel trains found</option>';
+
+    const modelOptions = TRAIN_MODEL_OPTIONS.map(m => 
+      `<option value="${m}" ${currentModel === m ? 'selected' : ''}>${m}</option>`
+    ).join('');
 
     this.innerHTML = `
       <style>
@@ -1000,6 +1036,14 @@ class LionelTrainCardEditor extends HTMLElement {
           </select>
           <div class="hint">Select your Lionel train from the list</div>
         </div>
+
+        <div class="field">
+          <label>Train Model</label>
+          <select id="train_model">
+            ${modelOptions}
+          </select>
+          <div class="hint">Select your train model for correct announcement labels</div>
+        </div>
         
         <div class="field">
           <label>Card Name (optional)</label>
@@ -1010,6 +1054,11 @@ class LionelTrainCardEditor extends HTMLElement {
 
     this.querySelector('#device').addEventListener('change', (e) => {
       this._config = { ...this._config, device: e.target.value };
+      this._fireEvent();
+    });
+
+    this.querySelector('#train_model').addEventListener('change', (e) => {
+      this._config = { ...this._config, train_model: e.target.value };
       this._fireEvent();
     });
 
