@@ -33,6 +33,15 @@ const TRAIN_MODELS = {
     fastest_freight: "First Gift",
     penna_flyer: "The King",
   },
+  "Thomas The Tank Engine": {
+    random: "Random",
+    oh_yeah: "Oh Yeah",
+    all_aboard: "All Aboard",
+    full_steam_ahead: "Full Steam Ahead",
+    number_1_engine: "Number 1 Engine",
+    on_track_and_on_time: "On Track",
+    rocking_the_rails: "Rocking the Rails",
+  },
 };
 
 const TRAIN_MODEL_OPTIONS = Object.keys(TRAIN_MODELS);
