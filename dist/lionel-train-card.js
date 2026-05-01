@@ -24,6 +24,15 @@ const TRAIN_MODELS = {
     fastest_freight: "Fastest Freight",
     penna_flyer: "Penna Flyer",
   },
+  "Thomas The Tank Engine": {
+  random: "Random",
+  ready_to_roll: "Oh Yeah",
+  hey_there: "All Aboard",
+  squeaky: "Full Steam Ahead",
+  water_and_fire: "Number 1 Engine",
+  fastest_freight: "On Track",
+  penna_flyer: "Rocking the Rails",
+},
   "Polar Express": {
     random: "Random",
     ready_to_roll: "Polar Express",
